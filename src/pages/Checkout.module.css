@@ -1,0 +1,159 @@
+/* ── STEPS INDICATOR ─────────────────────────────────────────────────────── */
+.stepsWrap {
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 36px; padding: 0 8px;
+}
+.step { display: flex; align-items: center; }
+.stepInner { display: flex; align-items: center; gap: 10px; }
+.stepNum {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.82rem; color: var(--text4);
+  background: var(--white); flex-shrink: 0;
+  transition: all .3s var(--ease);
+}
+.stepActive .stepNum {
+  background: var(--green); border-color: var(--green); color: #fff;
+  box-shadow: 0 0 0 4px var(--green-glow);
+  animation: pop .3s var(--spring);
+}
+.stepDone .stepNum {
+  background: var(--green); border-color: var(--green); color: #fff;
+}
+.stepLabel {
+  font-size: 0.82rem; color: var(--text4); font-weight: 500;
+  white-space: nowrap;
+  transition: color .3s;
+}
+.stepActive .stepLabel { color: var(--text); font-weight: 700; }
+.stepDone .stepLabel  { color: var(--green); font-weight: 600; }
+.stepLine {
+  flex: 1; height: 2px; background: var(--border);
+  margin: 0 14px; min-width: 40px;
+  transition: background .4s;
+}
+.stepLineDone { background: var(--green); }
+
+/* ── MAIN LAYOUT ─────────────────────────────────────────────────────────── */
+.layout {
+  display: grid; grid-template-columns: 1fr 340px;
+  gap: 24px; align-items: start;
+}
+
+/* ── FORM CARD ───────────────────────────────────────────────────────────── */
+.formCard { padding: 32px; animation: fadeUp .35s var(--ease) both; }
+.formCard h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 22px; letter-spacing: -.01em; }
+
+/* ── NAV BUTTONS ─────────────────────────────────────────────────────────── */
+.navBtns {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; margin-top: 28px;
+  border-top: 1px solid var(--border); padding-top: 22px;
+}
+
+/* ── PAYMENT METHODS ─────────────────────────────────────────────────────── */
+.payMethods { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.payMethod {
+  padding: 16px 20px; border-radius: var(--r);
+  border: 2px solid var(--border); background: var(--white);
+  text-align: left; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: all .2s var(--ease);
+  display: flex; align-items: center; gap: 12px;
+}
+.payMethod:hover { border-color: var(--border2); background: var(--bg); }
+.payMethodActive {
+  border-color: var(--green); background: var(--green-light);
+  color: var(--green-dark);
+  box-shadow: 0 0 0 3px var(--green-glow);
+}
+.payMethodRadio {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.payMethodActive .payMethodRadio {
+  border-color: var(--green); background: var(--green);
+}
+.payMethodActive .payMethodRadio::after {
+  content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff;
+}
+
+/* Cash note */
+.cashNote {
+  background: var(--bg); border-radius: var(--r); padding: 18px 20px;
+  font-size: 0.875rem; line-height: 1.7; color: var(--text2);
+  border-left: 4px solid var(--orange);
+}
+
+/* Card fields */
+.cardFields { animation: fadeUp .25s var(--ease) both; }
+
+/* Review blocks */
+.reviewSection { display: flex; flex-direction: column; gap: 12px; }
+.reviewBlock {
+  background: var(--bg); border-radius: var(--r); padding: 16px 18px;
+  border: 1px solid var(--border);
+}
+.reviewBlock h4 {
+  font-size: 0.72rem; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px;
+}
+.reviewBlock p { font-size: 0.875rem; color: var(--text2); line-height: 1.6; }
+.reviewItems { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.reviewItem {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.86rem; padding: 4px 0;
+}
+.reviewItem span:last-child { font-weight: 700; }
+
+/* ── ORDER SUMMARY SIDEBAR ───────────────────────────────────────────────── */
+.orderSummary { padding: 24px; position: sticky; top: 86px; }
+.summaryTitle { font-size: 0.95rem; font-weight: 800; margin-bottom: 18px; letter-spacing: -.01em; }
+.summaryItem { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 8px; }
+.summaryItem span:first-child { color: var(--text2); flex: 1; margin-right: 8px; }
+.summaryItem span:last-child { font-weight: 600; }
+.summaryDivider { height: 1px; background: var(--border); margin: 14px 0; }
+.summaryTotal { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.1rem; font-family: var(--font-display); }
+.summaryTotalAmt { color: var(--green); }
+
+/* ── SUCCESS SCREEN ──────────────────────────────────────────────────────── */
+.successWrap { max-width: 560px; margin: 40px auto; }
+.successCard { text-align: center; padding: 52px 40px; }
+.successAnim {
+  font-size: 5rem; margin-bottom: 20px; display: block;
+  animation: pop .5s var(--spring);
+}
+.successTitle { font-size: 1.75rem; font-weight: 900; color: var(--green); margin-bottom: 8px; letter-spacing: -.02em; }
+.successOrderId {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg); border-radius: var(--r-sm); padding: 6px 14px;
+  font-size: 0.9rem; font-weight: 700; color: var(--text2);
+  margin-bottom: 16px; border: 1px solid var(--border);
+}
+.successMsg { color: var(--text2); line-height: 1.75; margin-bottom: 28px; font-size: 0.9rem; }
+.successDetails {
+  background: var(--bg); border-radius: var(--r); padding: 20px 24px;
+  margin-bottom: 28px; text-align: left;
+}
+.successDetailRow {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; font-size: 0.875rem; border-bottom: 1px solid var(--border);
+}
+.successDetailRow:last-child { border: none; }
+.successDetailRow span:first-child { color: var(--text3); }
+.successDetailRow strong { font-weight: 700; }
+.successBtns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .orderSummary { position: static; }
+  .stepsWrap { gap: 0; }
+  .stepLabel { display: none; }
+  .stepActive .stepLabel { display: block; }
+}
+@media (max-width: 500px) {
+  .formCard { padding: 22px 20px; }
+  .successCard { padding: 36px 24px; }
+}

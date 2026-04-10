@@ -1,0 +1,52 @@
+.header { margin-bottom: 28px; }
+.headerSub { font-size: 0.85rem; color: var(--text3); margin-top: 5px; }
+
+.list { display: flex; flex-direction: column; gap: 16px; }
+
+.orderCard {
+  padding: 0; overflow: hidden;
+  animation: fadeUp .4s var(--ease) both;
+  transition: box-shadow .25s, transform .25s;
+}
+.orderCard:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.orderTop {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px; border-bottom: 1px solid var(--border);
+  background: var(--bg); gap: 12px; flex-wrap: wrap;
+}
+.orderMeta {}
+.orderId { font-weight: 900; font-size: 1.05rem; font-family: var(--font-display); letter-spacing: -.01em; }
+.orderDate { font-size: 0.77rem; color: var(--text4); margin-top: 2px; }
+.orderRight { display: flex; align-items: center; gap: 10px; }
+
+.orderBody { padding: 16px 22px; }
+
+.itemsGrid { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.itemRow {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.875rem; padding: 3px 0;
+}
+.itemRow span:first-child { color: var(--text2); }
+.itemRow span:last-child { font-weight: 600; color: var(--text); }
+.moreItems { font-size: 0.78rem; color: var(--text4); margin-top: 4px; font-style: italic; }
+
+.orderFooter {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 22px; background: var(--bg);
+  border-top: 1px solid var(--border); gap: 12px; flex-wrap: wrap;
+}
+.deliveryInfo { font-size: 0.8rem; color: var(--text3); display: flex; align-items: center; gap: 6px; }
+.totalBlock { display: flex; align-items: center; gap: 10px; }
+.totalLabel { font-size: 0.82rem; color: var(--text3); }
+.totalAmt { font-weight: 900; font-size: 1.15rem; color: var(--green); font-family: var(--font-display); }
+
+/* Empty */
+.emptyOrders { text-align: center; padding: 72px 32px; }
+.emptyIcon { font-size: 4rem; margin-bottom: 16px; opacity: .7; }
+.emptyTitle { font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; }
+.emptyDesc { color: var(--text3); font-size: 0.9rem; margin-bottom: 28px; max-width: 320px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+
+@media (max-width: 600px) {
+  .orderTop, .orderBody, .orderFooter { padding-left: 16px; padding-right: 16px; }
+}

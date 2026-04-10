@@ -1,0 +1,65 @@
+/* KPI Cards */
+.kpiGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.kpiCard { padding: 20px 22px; transition: all .25s var(--ease); }
+.kpiCard:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.kpiTop { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.kpiLabel {
+  font-size: 0.68rem; font-weight: 700; color: var(--text4);
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.kpiIconBox {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.kpiValue { font-size: 1.9rem; font-weight: 900; font-family: var(--font-display); letter-spacing: -.03em; line-height: 1; }
+.kpiSub { font-size: 0.73rem; color: var(--text4); margin-top: 6px; }
+
+/* Charts row */
+.chartsRow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.chartCard { padding: 24px; }
+.chartTitle { font-size: 0.9rem; font-weight: 800; margin-bottom: 18px; letter-spacing: -.01em; }
+
+/* Bar chart */
+.barChart { display: flex; align-items: flex-end; gap: 6px; height: 100px; }
+.barWrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.barVal { font-size: 0.62rem; color: var(--green); font-weight: 700; min-height: 14px; }
+.bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: height .6s var(--ease); }
+.barLabel { font-size: 0.67rem; color: var(--text4); }
+.noData { color: var(--text4); font-size: 0.82rem; text-align: center; padding: 20px 0; }
+
+/* Top products list */
+.topList { display: flex; flex-direction: column; gap: 10px; }
+.topItem { display: flex; align-items: center; gap: 10px; }
+.topRank {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--bg2); color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 800; flex-shrink: 0;
+}
+.topRank.gold   { background: #fef3c7; color: #d97706; }
+.topRank.silver { background: #f3f4f6; color: #6b7280; }
+.topName { flex: 1; font-size: 0.85rem; font-weight: 600; }
+.topQty  { font-size: 0.8rem; color: var(--green); font-weight: 700; }
+
+/* Alerts block */
+.alertsCard { padding: 22px; border: 1.5px solid #fed7aa; }
+.alertsTitle { font-size: 0.9rem; font-weight: 800; color: var(--orange); margin-bottom: 14px; }
+.alertsGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.alertItem {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 12px; background: var(--bg); border-radius: var(--r-sm);
+  font-size: 0.82rem; border: 1px solid var(--border);
+}
+.alertItemName { font-weight: 600; }
+.okMsg { color: var(--green); font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+
+@media (max-width: 900px) {
+  .kpiGrid   { grid-template-columns: repeat(2, 1fr); }
+  .chartsRow { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .kpiGrid { grid-template-columns: 1fr 1fr; }
+}
+
+.gold   { background: #fef3c7 !important; color: #d97706 !important; }
+.silver { background: #f3f4f6 !important; color: #6b7280 !important; }

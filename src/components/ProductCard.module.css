@@ -1,0 +1,145 @@
+.card {
+  background: var(--white);
+  border-radius: var(--r);
+  padding: 22px;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-xs);
+  display: flex; flex-direction: column;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s;
+  animation: cardIn .4s var(--ease) both;
+  position: relative; overflow: hidden;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(24,184,118,.35);
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .3s var(--ease);
+}
+.card:hover::before { transform: scaleX(1); }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.outOfStock {
+  opacity: .7;
+  filter: grayscale(30%);
+}
+.outOfStock:hover { transform: none; box-shadow: var(--shadow-xs); border-color: var(--border); }
+.outOfStock::before { display: none; }
+
+/* Top badges */
+.badges {
+  display: flex; gap: 5px; flex-wrap: wrap;
+  min-height: 22px; margin-bottom: 10px;
+}
+
+/* Imagen / emoji del producto */
+.imgWrap {
+  width: 100%;
+  height: 160px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin: 0 0 14px 0;
+  background: var(--green-light);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .3s var(--spring);
+}
+.card:hover .imgWrap { transform: scale(1.02); }
+
+.imgWrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform .3s var(--spring);
+}
+.card:hover .imgWrap img { transform: scale(1.06); }
+/* Body */
+.cat {
+  font-size: 0.71rem; font-weight: 700; color: var(--green);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px;
+}
+.name {
+  font-size: 0.97rem; font-weight: 700;
+  margin-bottom: 7px; color: var(--text); line-height: 1.35;
+}
+.desc {
+  font-size: 0.78rem; color: var(--text3); line-height: 1.6;
+  flex: 1; margin-bottom: 14px;
+}
+.sku {
+  font-size: 0.68rem; color: var(--text4);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  margin-bottom: 10px;
+  padding: 2px 6px; background: var(--bg); border-radius: 4px;
+  display: inline-block;
+}
+
+/* Footer */
+.footer {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 10px;
+  margin-top: auto; padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.priceBlock {}
+.price {
+  font-size: 1.3rem; font-weight: 900;
+  color: var(--green); font-family: var(--font-display);
+  letter-spacing: -.02em;
+}
+.stockInfo {
+  font-size: 0.72rem; color: var(--text4); margin-top: 1px;
+}
+
+/* Add to cart button */
+.addBtn {
+  padding: 9px 15px; border-radius: var(--r-sm);
+  background: var(--green); color: #fff; border: none;
+  font-size: 0.8rem; font-weight: 700;
+  transition: all .2s var(--ease); white-space: nowrap;
+  box-shadow: 0 2px 8px var(--green-glow);
+  display: flex; align-items: center; gap: 5px;
+}
+.addBtn:hover:not(:disabled) {
+  background: var(--green-dark);
+  transform: scale(1.04);
+  box-shadow: 0 4px 14px var(--green-glow);
+}
+.addBtn:active:not(:disabled) { transform: scale(.97); }
+
+.addBtnIn {
+  background: var(--blue) !important;
+  box-shadow: 0 2px 8px rgba(33,114,229,.2) !important;
+}
+.addBtnIn:hover:not(:disabled) { background: var(--blue-dark) !important; }
+
+.disabled {
+  background: var(--bg2) !important;
+  color: var(--text4) !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Qty controls (shown when already in cart) */
+.qtyRow {
+  display: flex; align-items: center; gap: 6px;
+}
+.qtyBtn {
+  width: 28px; height: 28px; border-radius: 7px;
+  border: 1.5px solid var(--border); background: var(--white);
+  font-size: 0.95rem; display: flex; align-items: center; justify-content: center;
+  transition: all .18s; font-weight: 600;
+}
+.qtyBtn:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
+.qtyNum { font-size: 0.9rem; font-weight: 700; min-width: 20px; text-align: center; }

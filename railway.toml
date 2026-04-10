@@ -1,0 +1,6 @@
+# railway.toml — configuración de deploy en Railway para el frontend
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "npm run preview"

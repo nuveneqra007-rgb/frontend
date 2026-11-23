@@ -6,6 +6,7 @@
 import {
   initialProducts,
   PRODUCT_IMAGES_BY_NAME,
+  PRODUCT_IMAGE_ALIASES,
   PENDING_PRODUCT_IMAGES,
   DEMO_USERS,
 } from '../data/datos.js'
@@ -21,6 +22,25 @@ class ApiError extends Error {
 }
 
 // ── Normalización Frontend ↔ Backend (snake_case <-> camelCase) ───────────────
+export function normalizeProductNameKey(name) {
+  if (typeof name !== 'string') return ''
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const NORMALIZED_IMAGE_MAP = Object.entries({
+  ...PRODUCT_IMAGES_BY_NAME,
+  ...PRODUCT_IMAGE_ALIASES,
+}).reduce((acc, [key, img]) => {
+  acc[normalizeProductNameKey(key)] = img
+  return acc
+}, {})
+
 export function resolveProductImageMeta(product, allProducts = []) {
   const rawName = typeof product?.name === 'string' ? product.name.trim() : ''
   if (!rawName) {
@@ -31,11 +51,12 @@ export function resolveProductImageMeta(product, allProducts = []) {
     }
   }
 
+  const normalizedTarget = normalizeProductNameKey(rawName)
+
   // Detectar nombres duplicados o ambiguos dentro del catálogo visible
   if (Array.isArray(allProducts) && allProducts.length > 0) {
-    const normalizedTarget = rawName.toLowerCase()
     const matches = allProducts.filter(
-      item => typeof item?.name === 'string' && item.name.trim().toLowerCase() === normalizedTarget
+      item => typeof item?.name === 'string' && normalizeProductNameKey(item.name) === normalizedTarget
     )
     if (matches.length > 1) {
       return {
@@ -49,6 +70,14 @@ export function resolveProductImageMeta(product, allProducts = []) {
   if (Object.prototype.hasOwnProperty.call(PRODUCT_IMAGES_BY_NAME, rawName)) {
     return {
       image: PRODUCT_IMAGES_BY_NAME[rawName],
+      imageStatus: 'verified',
+      imagePendingReason: null,
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(NORMALIZED_IMAGE_MAP, normalizedTarget)) {
+    return {
+      image: NORMALIZED_IMAGE_MAP[normalizedTarget],
       imageStatus: 'verified',
       imagePendingReason: null,
     }
@@ -155,10 +184,12 @@ export function getSeededProducts() {
     writeLS('tf_products', initial)
     return initial
   }
-  // Sincronizar plantillas clínicas y validar imágenes estrictamente por nombre exacto
+  // Sincronizar plantillas clínicas y validar imágenes por nombre normalizado
   const merged = saved.map(p => {
-    const exactName = typeof p?.name === 'string' ? p.name.trim() : ''
-    const template = initialProducts.find(ip => ip.name === exactName)
+    const normalizedName = normalizeProductNameKey(p?.name)
+    const template = initialProducts.find(
+      ip => normalizeProductNameKey(ip.name) === normalizedName
+    )
     return {
       ...template,
       ...p,

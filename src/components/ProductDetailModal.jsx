@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '../context/AppContext.jsx'
+import { resolveProductImage } from '../services/api.js'
 import { IconX, IconPlus, IconMinus, IconShield, IconPill } from './Icons.jsx'
 import styles from './ProductDetailModal.module.css'
 
 export default function ProductDetailModal() {
-  const { selectedProduct, setSelectedProduct, addToCart, cart, showToast } = useApp()
+  const { products, selectedProduct, setSelectedProduct, addToCart, cart, showToast } = useApp()
 
   useEffect(() => {
     if (!selectedProduct) return
@@ -19,6 +20,7 @@ export default function ProductDetailModal() {
     <ProductDetailContent
       key={selectedProduct.id}
       p={selectedProduct}
+      products={products}
       setSelectedProduct={setSelectedProduct}
       addToCart={addToCart}
       cart={cart}
@@ -27,14 +29,15 @@ export default function ProductDetailModal() {
   )
 }
 
-function ProductDetailContent({ p, setSelectedProduct, addToCart, cart, showToast }) {
+function ProductDetailContent({ p, products, setSelectedProduct, addToCart, cart, showToast }) {
   const [qty, setQty] = useState(1)
   const [failedSrc, setFailedSrc] = useState(null)
   const cartItem = cart.find(i => i.id === p.id)
   const alreadyInCart = cartItem ? cartItem.qty : 0
   const maxAddable = Math.max(0, p.stock - alreadyInCart)
   const outOfStock = p.stock === 0
-  const showImage = Boolean(p.image) && failedSrc !== p.image
+  const imageSrc = p.image || resolveProductImage(p, products)
+  const showImage = Boolean(imageSrc) && failedSrc !== imageSrc
 
   const handleAdd = () => {
     if (outOfStock || maxAddable === 0) return
@@ -71,10 +74,10 @@ function ProductDetailContent({ p, setSelectedProduct, addToCart, cart, showToas
             <div className={styles.mediaBox}>
               {showImage ? (
                 <img
-                  src={p.image}
+                  src={imageSrc}
                   alt={p.name}
                   referrerPolicy="no-referrer"
-                  onError={() => setFailedSrc(p.image)}
+                  onError={() => setFailedSrc(imageSrc)}
                 />
               ) : (
                 <div className={styles.mediaFallback}>

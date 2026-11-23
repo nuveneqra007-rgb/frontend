@@ -34,6 +34,15 @@ export const PRODUCT_IMAGES_BY_NAME = {
   'Proteína Whey 1kg': wheyImg,
 }
 
+// Variantes de escritura equivalentes del mismo producto (sin cruzar medicamentos ni dosis)
+export const PRODUCT_IMAGE_ALIASES = {
+  'Shampoo Anticaspa': shampooImg,
+  'Shampoo Anti-Caspa': shampooImg,
+  'Shampoo Anti Caspa': shampooImg,
+  'Shampoo Anticaspa 250ml': shampooImg,
+  'Shampoo Anticaspa Clínico 250ml': shampooImg,
+}
+
 export const PENDING_PRODUCT_IMAGES = {}
 
 export const initialProducts = [

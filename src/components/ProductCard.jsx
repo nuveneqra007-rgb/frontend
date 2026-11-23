@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext.jsx'
+import { resolveProductImage } from '../services/api.js'
 import { IconPlus, IconMinus, IconPill } from './Icons.jsx'
 import styles from './ProductCard.module.css'
 
 export default function ProductCard({ product, animDelay = 0 }) {
-  const { addToCart, changeQty, showToast, cart, setSelectedProduct } = useApp()
+  const { products, addToCart, changeQty, showToast, cart, setSelectedProduct } = useApp()
   const [failedSrc, setFailedSrc] = useState(null)
 
   const cartItem = cart.find(i => i.id === product.id)
@@ -12,7 +13,8 @@ export default function ProductCard({ product, animDelay = 0 }) {
   const atMax = inCart >= product.stock
   const outOfStock = product.stock === 0
   const isLowStock = product.stock > 0 && product.stock <= (product.lowStockThreshold || 15)
-  const showImage = Boolean(product.image) && failedSrc !== product.image
+  const imageSrc = product.image || resolveProductImage(product, products)
+  const showImage = Boolean(imageSrc) && failedSrc !== imageSrc
 
   // At most 1 subtle contextual status tag on the product media frame
   let statusTag = null
@@ -49,11 +51,10 @@ export default function ProductCard({ product, animDelay = 0 }) {
       >
         {showImage ? (
           <img
-            src={product.image}
+            src={imageSrc}
             alt={product.name}
             referrerPolicy="no-referrer"
-            loading="lazy"
-            onError={() => setFailedSrc(product.image)}
+            onError={() => setFailedSrc(imageSrc)}
           />
         ) : (
           <div className={styles.imgFallback}>

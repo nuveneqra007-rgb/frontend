@@ -29,11 +29,12 @@ export default function ProductDetailModal() {
 
 function ProductDetailContent({ p, setSelectedProduct, addToCart, cart, showToast }) {
   const [qty, setQty] = useState(1)
-  const [imgFailed, setImgFailed] = useState(false)
+  const [failedSrc, setFailedSrc] = useState(null)
   const cartItem = cart.find(i => i.id === p.id)
   const alreadyInCart = cartItem ? cartItem.qty : 0
   const maxAddable = Math.max(0, p.stock - alreadyInCart)
   const outOfStock = p.stock === 0
+  const showImage = Boolean(p.image) && failedSrc !== p.image
 
   const handleAdd = () => {
     if (outOfStock || maxAddable === 0) return
@@ -68,17 +69,21 @@ function ProductDetailContent({ p, setSelectedProduct, addToCart, cart, showToas
           {/* Left: Studio Product Image */}
           <div className={styles.mediaCol}>
             <div className={styles.mediaBox}>
-              {p.image && !imgFailed ? (
+              {showImage ? (
                 <img
                   src={p.image}
                   alt={p.name}
                   referrerPolicy="no-referrer"
-                  onError={() => setImgFailed(true)}
+                  onError={() => setFailedSrc(p.image)}
                 />
               ) : (
                 <div className={styles.mediaFallback}>
                   <IconPill size={40} />
                   <span>{p.name}</span>
+                  <span className={styles.mediaPendingTag}>Imagen pendiente</span>
+                  {p.imagePendingReason && (
+                    <span className={styles.mediaPendingReason}>{p.imagePendingReason}</span>
+                  )}
                 </div>
               )}
             </div>

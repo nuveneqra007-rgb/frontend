@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { api } from '../services/api.js'
+import { api, resolveProductImage } from '../services/api.js'
 import { useApp } from '../context/AppContext.jsx'
 import {
   IconAlert,
@@ -182,13 +182,13 @@ export default function InventoryPanel() {
                 </thead>
                 <tbody>
                   {alerts.map(a => {
-                    const matched = products.find(p => p.id === a.product_id || p.sku === a.sku)
+                    const thumb = resolveProductImage(a, products)
                     return (
                       <tr key={a.id}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <div style={{ width: 30, height: 30, borderRadius: 6, border: '1px solid var(--border)', overflow: 'hidden', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text4)' }}>
-                              {matched?.image ? <img src={matched.image} alt={a.name} referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <IconPill size={13} />}
+                              {thumb ? <img src={thumb} alt={a.name} referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <IconPill size={13} />}
                             </div>
                             <span style={{ fontWeight: 600, color: 'var(--text)' }}>{a.name}</span>
                           </div>

@@ -5,8 +5,8 @@
 
 import {
   initialProducts,
-  PRODUCT_IMAGES_BY_ID,
-  PRODUCT_IMAGES_BY_SKU,
+  PRODUCT_IMAGES_BY_NAME,
+  PENDING_PRODUCT_IMAGES,
   DEMO_USERS,
 } from '../data/datos.js'
 
@@ -21,22 +21,62 @@ class ApiError extends Error {
 }
 
 // ── Normalización Frontend ↔ Backend (snake_case <-> camelCase) ───────────────
-export function resolveProductImage(product) {
-  if (product.sku && PRODUCT_IMAGES_BY_SKU[product.sku]) {
-    return PRODUCT_IMAGES_BY_SKU[product.sku]
+export function resolveProductImageMeta(product, allProducts = []) {
+  const rawName = typeof product?.name === 'string' ? product.name.trim() : ''
+  if (!rawName) {
+    return {
+      image: null,
+      imageStatus: 'pending',
+      imagePendingReason: 'Producto sin nombre registrado',
+    }
   }
-  if (product.id && PRODUCT_IMAGES_BY_ID[Number(product.id)]) {
-    return PRODUCT_IMAGES_BY_ID[Number(product.id)]
+
+  // Detectar nombres duplicados o ambiguos dentro del catálogo visible
+  if (Array.isArray(allProducts) && allProducts.length > 0) {
+    const normalizedTarget = rawName.toLowerCase()
+    const matches = allProducts.filter(
+      item => typeof item?.name === 'string' && item.name.trim().toLowerCase() === normalizedTarget
+    )
+    if (matches.length > 1) {
+      return {
+        image: null,
+        imageStatus: 'pending',
+        imagePendingReason: 'Nombre duplicado o ambiguo en el catálogo',
+      }
+    }
   }
-  if (product.image && !String(product.image).startsWith('http')) {
-    return product.image
+
+  if (Object.prototype.hasOwnProperty.call(PRODUCT_IMAGES_BY_NAME, rawName)) {
+    return {
+      image: PRODUCT_IMAGES_BY_NAME[rawName],
+      imageStatus: 'verified',
+      imagePendingReason: null,
+    }
   }
-  return null
+
+  if (Object.prototype.hasOwnProperty.call(PENDING_PRODUCT_IMAGES, rawName)) {
+    return {
+      image: null,
+      imageStatus: 'pending',
+      imagePendingReason: PENDING_PRODUCT_IMAGES[rawName],
+    }
+  }
+
+  return {
+    image: null,
+    imageStatus: 'pending',
+    imagePendingReason: 'Sin coincidencia exacta de imagen registrada',
+  }
 }
 
-export function normalizeProduct(raw) {
+export function resolveProductImage(product, allProducts = []) {
+  return resolveProductImageMeta(product, allProducts).image
+}
+
+export function normalizeProduct(raw, allProducts = []) {
   if (!raw) return raw
   const cat = raw.cat || raw.category || 'Analgésicos'
+  const imageMeta = resolveProductImageMeta(raw, allProducts)
   return {
     ...raw,
     id: Number(raw.id) || raw.id,
@@ -50,8 +90,15 @@ export function normalizeProduct(raw) {
     expiry: raw.expiry || raw.expiry_date || '',
     proveedor: raw.proveedor || raw.supplier || '',
     sku: raw.sku || '',
-    image: resolveProductImage(raw),
+    image: imageMeta.image,
+    imageStatus: imageMeta.imageStatus,
+    imagePendingReason: imageMeta.imagePendingReason,
   }
+}
+
+export function reconcileCatalogImages(list) {
+  const safeList = Array.isArray(list) ? list : []
+  return safeList.map(item => normalizeProduct(item, safeList))
 }
 
 export function normalizeOrder(raw) {
@@ -104,19 +151,22 @@ function writeLS(key, value) {
 export function getSeededProducts() {
   const saved = readLS('tf_products', null)
   if (!saved) {
-    writeLS('tf_products', initialProducts)
-    return initialProducts
+    const initial = reconcileCatalogImages(initialProducts)
+    writeLS('tf_products', initial)
+    return initial
   }
-  // Migrar URLs externas obsoletas hacia imágenes locales de estudio
-  const migrated = saved.map(p => {
-    const template = initialProducts.find(ip => ip.id === p.id || (ip.sku && ip.sku === p.sku))
-    return normalizeProduct({
+  // Sincronizar plantillas clínicas y validar imágenes estrictamente por nombre exacto
+  const merged = saved.map(p => {
+    const exactName = typeof p?.name === 'string' ? p.name.trim() : ''
+    const template = initialProducts.find(ip => ip.name === exactName)
+    return {
       ...template,
       ...p,
-      image: resolveProductImage(p) || template?.image || null,
-    })
+    }
   })
-  return migrated
+  const reconciled = reconcileCatalogImages(merged)
+  writeLS('tf_products', reconciled)
+  return reconciled
 }
 
 export function getSeededOrders() {

@@ -8,6 +8,7 @@ import {
   getSeededProducts,
   getSeededOrders,
   normalizeProduct,
+  reconcileCatalogImages,
   normalizeOrder,
   appendInventoryMovement,
 } from '../services/api.js'
@@ -56,7 +57,7 @@ export function AppProvider({ children }) {
     productsApi.getAll()
       .then(res => {
         const list = Array.isArray(res) ? res : (res?.data || [])
-        if (list.length) setProducts(list.map(normalizeProduct))
+        if (list.length) setProducts(reconcileCatalogImages(list))
       })
       .catch(() => {})
   }, [])
@@ -65,9 +66,14 @@ export function AppProvider({ children }) {
     if (hasRemoteBackend) {
       try {
         const created = await productsApi.create(product)
-        const normalized = normalizeProduct(created?.data || created)
-        setProducts(prev => [...prev, normalized])
-        return normalized
+        const rawCreated = created?.data || created
+        let reconciledItem = null
+        setProducts(prev => {
+          const next = reconcileCatalogImages([...prev, rawCreated])
+          reconciledItem = next[next.length - 1]
+          return next
+        })
+        return reconciledItem || normalizeProduct(rawCreated, products)
       } catch {
         // Fallback local si el endpoint falla
       }
@@ -75,11 +81,12 @@ export function AppProvider({ children }) {
     let createdItem = null
     setProducts(prev => {
       const newId = prev.length ? Math.max(...prev.map(p => Number(p.id) || 0)) + 1 : 1
-      createdItem = normalizeProduct({ ...product, id: newId })
-      return [...prev, createdItem]
+      const next = reconcileCatalogImages([...prev, { ...product, id: newId }])
+      createdItem = next[next.length - 1]
+      return next
     })
     return createdItem
-  }, [])
+  }, [products])
 
   const updateProduct = useCallback(async (id, data) => {
     if (hasRemoteBackend) {
@@ -89,7 +96,7 @@ export function AppProvider({ children }) {
         // continuar con actualización de estado local
       }
     }
-    setProducts(prev => prev.map(p => (p.id === id ? normalizeProduct({ ...p, ...data }) : p)))
+    setProducts(prev => reconcileCatalogImages(prev.map(p => (p.id === id ? { ...p, ...data } : p))))
   }, [])
 
   const deleteProduct = useCallback(async (id) => {
@@ -100,7 +107,7 @@ export function AppProvider({ children }) {
         // continuar con actualización local
       }
     }
-    setProducts(prev => prev.filter(p => p.id !== id))
+    setProducts(prev => reconcileCatalogImages(prev.filter(p => p.id !== id)))
   }, [])
 
   const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= (p.lowStockThreshold || 15))
@@ -110,7 +117,8 @@ export function AppProvider({ children }) {
   const [cart, setCart] = useState(() => {
     try {
       const saved = localStorage.getItem('tf_cart')
-      return saved ? JSON.parse(saved).map(i => normalizeProduct(i)) : []
+      const seeded = getSeededProducts()
+      return saved ? JSON.parse(saved).map(i => normalizeProduct(i, seeded)) : []
     } catch { return [] }
   })
 
@@ -130,10 +138,10 @@ export function AppProvider({ children }) {
       }
       if (qtyToAdd > product.stock) return prev
       added = true
-      return [...prev, { ...normalizeProduct(product), qty: qtyToAdd }]
+      return [...prev, { ...normalizeProduct(product, products), qty: qtyToAdd }]
     })
     return added
-  }, [])
+  }, [products])
 
   const removeFromCart = useCallback((id) => {
     setCart(prev => prev.filter(i => i.id !== id))

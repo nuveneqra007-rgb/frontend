@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
-import { getInvoiceUrl } from '../services/api.js'
+import { getInvoiceUrl, resolveProductImage } from '../services/api.js'
 import {
   IconPackage,
   IconClock,
@@ -135,8 +135,7 @@ export default function OrderHistory() {
 
                 <div className={styles.itemsGrid}>
                   {visibleItems.map((item, i) => {
-                    const matchedProd = products.find(p => p.id === item.id || p.name === item.name)
-                    const thumb = item.image || matchedProd?.image
+                    const thumb = resolveProductImage(item, products)
                     return (
                       <div key={i} className={styles.itemRow}>
                         <div className={styles.itemLeft}>

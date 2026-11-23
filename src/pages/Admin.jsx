@@ -396,10 +396,15 @@ function InventorySection() {
                       </div>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: '0.86rem', color: 'var(--text)' }}>{p.name}</div>
-                        <div style={{ fontSize: '0.73rem', color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontSize: '0.73rem', color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                           <span>{p.cat}</span>
                           {p.requiresPrescription && (
                             <span className="badge badge-blue" style={{ padding: '0px 5px', fontSize: '0.66rem' }}>Rx</span>
+                          )}
+                          {!p.image && (
+                            <span className="badge badge-orange" style={{ padding: '0px 5px', fontSize: '0.66rem' }} title={p.imagePendingReason || 'Imagen pendiente'}>
+                              Img pendiente
+                            </span>
                           )}
                         </div>
                       </div>

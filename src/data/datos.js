@@ -1,54 +1,40 @@
 import heroPharmacyImg from '../assets/images/hero_modern_pharmacy_1795402200538.jpg'
 import paracetamolImg from '../assets/images/paracetamol_tablets_box_1795402218676.jpg'
-import vitaminaCImg from '../assets/images/vitamin_c_bottle_1795402199426.jpg'
-import amoxicilinaImg from '../assets/images/amoxicillin_capsules_box_1795402200384.jpg'
-import ibuprofenoImg from '../assets/images/ibuprofen_tablets_pack_1795402199585.jpg'
-import vitaminaD3Img from '../assets/images/vitamin_d3_softgels_1795402200414.jpg'
+import vitaminaCImg from '../assets/images/vitamina_c_1000mg_1795405278781.jpg'
+import amoxicilinaImg from '../assets/images/amoxicilina_500mg_box_1795405279327.jpg'
+import ibuprofenImg from '../assets/images/ibuprofen_tablets_pack_1795402199585.jpg'
+import vitaminaD3Img from '../assets/images/vitamina_d3_2000ui_1795405279121.jpg'
 import shampooImg from '../assets/images/medical_scalp_shampoo_1795402199409.jpg'
-import aspirinaImg from '../assets/images/aspirin_lowdose_box_1795402200124.jpg'
+import aspirinaImg from '../assets/images/aspirina_100mg_box_1795405278999.jpg'
 import complejoBImg from '../assets/images/b_complex_bottle_1795402200237.jpg'
-import azitromicinaImg from '../assets/images/azithromycin_pack_box_1795402200474.jpg'
+import azitromicinaImg from '../assets/images/azitromicina_500mg_box_1795405279575.jpg'
 import cremaImg from '../assets/images/hydrating_derma_cream_1795402200008.jpg'
 import omega3Img from '../assets/images/omega3_fish_oil_1795402217994.jpg'
-import dipironaImg from '../assets/images/dipyrone_pain_tablets_1795402200417.jpg'
-import loratadinaImg from '../assets/images/loratadine_allergy_box_1795402202581.jpg'
+import dipironaImg from '../assets/images/dipirona_500mg_box_1795405278632.jpg'
+import loratadinaImg from '../assets/images/loratadina_10mg_box_1795405278503.jpg'
 import wheyImg from '../assets/images/whey_protein_tub_1795402293350.jpg'
 
 export const HERO_IMAGE = heroPharmacyImg
 
-export const PRODUCT_IMAGES_BY_SKU = {
-  'ANA-001': paracetamolImg,
-  'VIT-002': vitaminaCImg,
-  'ANT-003': amoxicilinaImg,
-  'ANA-004': ibuprofenoImg,
-  'VIT-005': vitaminaD3Img,
-  'CUI-006': shampooImg,
-  'ANA-007': aspirinaImg,
-  'VIT-008': complejoBImg,
-  'ANT-009': azitromicinaImg,
-  'CUI-010': cremaImg,
-  'VIT-011': omega3Img,
-  'ANA-012': dipironaImg,
-  'ANA-013': loratadinaImg,
-  'VIT-014': wheyImg,
+// Mapa estricto por nombre exacto del medicamento/producto (14/14 verificados visualmente)
+export const PRODUCT_IMAGES_BY_NAME = {
+  'Paracetamol 500mg': paracetamolImg,
+  'Vitamina C 1000mg': vitaminaCImg,
+  'Amoxicilina 500mg': amoxicilinaImg,
+  'Ibuprofeno 400mg': ibuprofenImg,
+  'Vitamina D3 2000UI': vitaminaD3Img,
+  'Shampoo Anticaspa Clínico': shampooImg,
+  'Aspirina 100mg': aspirinaImg,
+  'Complejo B Forte': complejoBImg,
+  'Azitromicina 500mg': azitromicinaImg,
+  'Crema Hidratante 200ml': cremaImg,
+  'Omega 3 1000mg': omega3Img,
+  'Dipirona 500mg': dipironaImg,
+  'Loratadina 10mg': loratadinaImg,
+  'Proteína Whey 1kg': wheyImg,
 }
 
-export const PRODUCT_IMAGES_BY_ID = {
-  1: paracetamolImg,
-  2: vitaminaCImg,
-  3: amoxicilinaImg,
-  4: ibuprofenoImg,
-  5: vitaminaD3Img,
-  6: shampooImg,
-  7: aspirinaImg,
-  8: complejoBImg,
-  9: azitromicinaImg,
-  10: cremaImg,
-  11: omega3Img,
-  12: dipironaImg,
-  13: loratadinaImg,
-  14: wheyImg,
-}
+export const PENDING_PRODUCT_IMAGES = {}
 
 export const initialProducts = [
   {
@@ -62,7 +48,7 @@ export const initialProducts = [
     activeIngredient: 'Acetaminofén 500 mg',
     presentation: 'Caja × 20 tabletas recubiertas',
     indications: 'Cefalea, fiebre, dolor muscular y malestar general. Dosis habitual adultos: 1 tableta cada 6–8 horas.',
-    image: paracetamolImg,
+    image: PRODUCT_IMAGES_BY_NAME['Paracetamol 500mg'],
     lote: 'LOT-2026-001',
     expiry: '2028-08-15',
     proveedor: 'Laboratorios Rowe',
@@ -80,7 +66,7 @@ export const initialProducts = [
     activeIngredient: 'Ácido Ascórbico 1000 mg',
     presentation: 'Frasco ámbar × 90 tabletas',
     indications: 'Suplemento antioxidante diario para soporte inmunológico y síntesis de colágeno.',
-    image: vitaminaCImg,
+    image: PRODUCT_IMAGES_BY_NAME['Vitamina C 1000mg'],
     lote: 'LOT-2026-012',
     expiry: '2028-04-20',
     proveedor: 'NutriVida RD',
@@ -98,7 +84,7 @@ export const initialProducts = [
     activeIngredient: 'Amoxicilina Trihidratada 500 mg',
     presentation: 'Caja × 21 cápsulas',
     indications: 'Tratamiento de infecciones bacterianas respiratorias, otorrinolaringológicas y urinarias bajo supervisión médica.',
-    image: amoxicilinaImg,
+    image: PRODUCT_IMAGES_BY_NAME['Amoxicilina 500mg'],
     lote: 'LOT-2026-034',
     expiry: '2027-01-15',
     proveedor: 'FarmaPlus Import',
@@ -116,7 +102,7 @@ export const initialProducts = [
     activeIngredient: 'Ibuprofeno 400 mg',
     presentation: 'Caja × 20 cápsulas blandas',
     indications: 'Dolor inflamatorio articular, dental, menstrual y estados febriles.',
-    image: ibuprofenoImg,
+    image: PRODUCT_IMAGES_BY_NAME['Ibuprofeno 400mg'],
     lote: 'LOT-2026-041',
     expiry: '2027-11-10',
     proveedor: 'Laboratorios Rowe',
@@ -134,7 +120,7 @@ export const initialProducts = [
     activeIngredient: 'Colecalciferol (Vitamina D3) 2000 UI',
     presentation: 'Frasco × 60 cápsulas blandas',
     indications: 'Favorece la absorción de calcio y el mantenimiento de huesos y defensas.',
-    image: vitaminaD3Img,
+    image: PRODUCT_IMAGES_BY_NAME['Vitamina D3 2000UI'],
     lote: 'LOT-2026-055',
     expiry: '2028-03-15',
     proveedor: 'NutriVida RD',
@@ -152,7 +138,7 @@ export const initialProducts = [
     activeIngredient: 'Piritionato de Zinc 1% + Pantenol',
     presentation: 'Botella dosificadora 250 ml',
     indications: 'Control de dermatitis seborreica leve, picazón y caspa desde las primeras aplicaciones.',
-    image: shampooImg,
+    image: PRODUCT_IMAGES_BY_NAME['Shampoo Anticaspa Clínico'],
     lote: 'LOT-2026-066',
     expiry: '2027-09-20',
     proveedor: 'DermaCare Labs',
@@ -170,7 +156,7 @@ export const initialProducts = [
     activeIngredient: 'Ácido Acetilsalicílico 100 mg',
     presentation: 'Caja × 30 tabletas entéricas',
     indications: 'Antiagregante plaquetario de uso diario indicado por criterio médico.',
-    image: aspirinaImg,
+    image: PRODUCT_IMAGES_BY_NAME['Aspirina 100mg'],
     lote: 'LOT-2026-071',
     expiry: '2027-12-30',
     proveedor: 'Laboratorios Rowe',
@@ -188,7 +174,7 @@ export const initialProducts = [
     activeIngredient: 'Tiamina 100mg · Piridoxina 50mg · Cianocobalamina',
     presentation: 'Frasco ámbar × 60 tabletas recubiertas',
     indications: 'Apoyo del sistema nervioso periférico, fatiga física y recuperación metabólica.',
-    image: complejoBImg,
+    image: PRODUCT_IMAGES_BY_NAME['Complejo B Forte'],
     lote: 'LOT-2026-082',
     expiry: '2028-02-01',
     proveedor: 'NutriVida RD',
@@ -206,7 +192,7 @@ export const initialProducts = [
     activeIngredient: 'Azitromicina Dihidrato 500 mg',
     presentation: 'Caja × 5 tabletas recubiertas',
     indications: 'Infecciones del tracto respiratorio superior e inferior. Venta exclusiva con receta médica.',
-    image: azitromicinaImg,
+    image: PRODUCT_IMAGES_BY_NAME['Azitromicina 500mg'],
     lote: 'LOT-2026-091',
     expiry: '2027-01-25',
     proveedor: 'FarmaPlus Import',
@@ -224,7 +210,7 @@ export const initialProducts = [
     activeIngredient: 'Ceramidas + Ácido Hialurónico + Niacinamida',
     presentation: 'Tubo dermatológico 200 ml',
     indications: 'Hidratación intensiva diaria para piel seca, atópica o sensibilizada.',
-    image: cremaImg,
+    image: PRODUCT_IMAGES_BY_NAME['Crema Hidratante 200ml'],
     lote: 'LOT-2026-100',
     expiry: '2027-10-30',
     proveedor: 'DermaCare Labs',
@@ -242,7 +228,7 @@ export const initialProducts = [
     activeIngredient: 'Aceite de Pescado Purificado (EPA 360mg / DHA 240mg)',
     presentation: 'Frasco × 90 cápsulas blandas',
     indications: 'Soporte lipídico cardiovascular, salud cerebral y función articular.',
-    image: omega3Img,
+    image: PRODUCT_IMAGES_BY_NAME['Omega 3 1000mg'],
     lote: 'LOT-2026-111',
     expiry: '2028-07-20',
     proveedor: 'NutriVida RD',
@@ -260,7 +246,7 @@ export const initialProducts = [
     activeIngredient: 'Metamizol Sódico 500 mg',
     presentation: 'Caja × 24 tabletas',
     indications: 'Fiebre alta refractaria y dolor agudo moderado a intenso.',
-    image: dipironaImg,
+    image: PRODUCT_IMAGES_BY_NAME['Dipirona 500mg'],
     lote: 'LOT-2026-120',
     expiry: '2027-06-30',
     proveedor: 'Laboratorios Rowe',
@@ -278,7 +264,7 @@ export const initialProducts = [
     activeIngredient: 'Loratadina Micronizada 10 mg',
     presentation: 'Caja × 24 tabletas',
     indications: 'Alivio de rinitis alérgica, estornudos, lagrimeo y urticaria crónica.',
-    image: loratadinaImg,
+    image: PRODUCT_IMAGES_BY_NAME['Loratadina 10mg'],
     lote: 'LOT-2026-130',
     expiry: '2028-02-28',
     proveedor: 'Laboratorios Rowe',
@@ -296,7 +282,7 @@ export const initialProducts = [
     activeIngredient: 'Proteína de Suero 25g/porción + Enzimas Digestivas',
     presentation: 'Envase clínico 1 kg (33 porciones)',
     indications: 'Suplementación proteica para recuperación muscular y soporte nutricional.',
-    image: wheyImg,
+    image: PRODUCT_IMAGES_BY_NAME['Proteína Whey 1kg'],
     lote: 'LOT-2026-141',
     expiry: '2027-08-10',
     proveedor: 'NutriVida RD',

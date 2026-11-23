@@ -5,13 +5,14 @@ import styles from './ProductCard.module.css'
 
 export default function ProductCard({ product, animDelay = 0 }) {
   const { addToCart, changeQty, showToast, cart, setSelectedProduct } = useApp()
-  const [imgFailed, setImgFailed] = useState(false)
+  const [failedSrc, setFailedSrc] = useState(null)
 
   const cartItem = cart.find(i => i.id === product.id)
   const inCart = cartItem ? cartItem.qty : 0
   const atMax = inCart >= product.stock
   const outOfStock = product.stock === 0
   const isLowStock = product.stock > 0 && product.stock <= (product.lowStockThreshold || 15)
+  const showImage = Boolean(product.image) && failedSrc !== product.image
 
   // At most 1 subtle contextual status tag on the product media frame
   let statusTag = null
@@ -46,18 +47,19 @@ export default function ProductCard({ product, animDelay = 0 }) {
         onClick={() => setSelectedProduct(product)}
         aria-label={`Ver ficha clínica de ${product.name}`}
       >
-        {product.image && !imgFailed ? (
+        {showImage ? (
           <img
             src={product.image}
             alt={product.name}
             referrerPolicy="no-referrer"
             loading="lazy"
-            onError={() => setImgFailed(true)}
+            onError={() => setFailedSrc(product.image)}
           />
         ) : (
           <div className={styles.imgFallback}>
             <IconPill size={30} />
             <span>{product.name}</span>
+            <span className={styles.pendingLabel}>Imagen pendiente</span>
           </div>
         )}
 

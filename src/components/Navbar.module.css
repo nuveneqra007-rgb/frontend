@@ -1,174 +1,158 @@
-/* ── NAVBAR ─────────────────────────────────────────────────────────────── */
+/* ── NAVBAR (3-Zone Clinical Header) ──────────────────────────────────────── */
 .navbar {
-  background: rgba(255,255,255,.92);
+  background: rgba(255, 255, 255, 0.94);
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 200;
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 1px 0 var(--border), 0 2px 16px rgba(0,0,0,.04);
-  transition: box-shadow .3s;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  transition: box-shadow 180ms var(--ease);
 }
-.navbarScrolled { box-shadow: 0 1px 0 var(--border), 0 4px 24px rgba(0,0,0,.09); }
+.navbarScrolled { box-shadow: var(--shadow-md); }
 
 .inner {
   max-width: 1240px; margin: 0 auto;
-  padding: 0 24px; display: flex;
-  align-items: center; height: 66px; gap: 0;
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 32px; height: 64px;
 }
 
-/* Logo */
+/* Zone 1: Brand Wordmark */
 .logo {
-  display: flex; align-items: center; gap: 10px;
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 1.18rem; color: var(--green);
-  white-space: nowrap; flex-shrink: 0; margin-right: 32px;
-  transition: opacity .2s;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.15rem; color: var(--text);
+  letter-spacing: -0.025em;
+  white-space: nowrap; flex-shrink: 0;
 }
-.logo:hover { opacity: .85; }
-.logoIcon {
-  width: 34px; height: 34px; background: var(--green-light);
-  border-radius: 10px; display: flex; align-items: center;
-  justify-content: center; flex-shrink: 0;
+.logoMark {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--green); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
+.logoText { white-space: nowrap; }
 
-/* Links */
+/* Zone 2: Clean Text Navigation Links */
 .links {
-  display: flex; gap: 2px; flex: 1; align-items: center;
+  display: flex; align-items: center; gap: 24px;
+  flex: 1; justify-content: center;
 }
 .link {
-  padding: 7px 13px; border-radius: var(--r-sm);
-  font-size: 0.875rem; font-weight: 500; color: var(--text2);
-  transition: all .18s var(--ease); position: relative;
-  white-space: nowrap;
+  position: relative;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 2px;
+  font-size: 0.875rem; font-weight: 500; color: var(--text3);
+  transition: color 160ms var(--ease);
+  white-space: nowrap; flex-shrink: 0;
 }
-.link:hover { color: var(--green); background: var(--green-light); }
-.active {
-  color: var(--green) !important;
-  background: var(--green-light);
-  font-weight: 700;
+.link:hover { color: var(--text); }
+.link::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -2px;
+  height: 2px; border-radius: 2px; background: var(--green);
+  transform: scaleX(0); transition: transform 180ms var(--ease);
 }
+.active { color: var(--text) !important; font-weight: 600; }
+.active::after { transform: scaleX(1); }
 
-/* Alert dot on link */
-.alertDot {
+.navAlert {
   display: inline-flex; align-items: center; justify-content: center;
-  position: absolute; top: 1px; right: 2px;
-  background: var(--red); color: #fff; border-radius: 20px;
-  font-size: 0.6rem; padding: 1px 5px; font-weight: 800; line-height: 1.4;
-  animation: pop .3s var(--spring);
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 4px; background: var(--red-light); color: var(--red);
+  font-size: 0.7rem; font-weight: 700;
+  border: 1px solid rgba(220, 38, 38, 0.2);
 }
 
-/* Actions */
+/* Zone 3: Actions */
 .actions {
-  display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 12px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
 }
 
-/* Cart button */
 .cartBtn {
-  position: relative; padding: 8px 16px; border-radius: var(--r-sm);
-  border: 1.5px solid var(--border); background: var(--white);
-  color: var(--text2); font-size: 0.875rem; font-weight: 600;
-  display: flex; align-items: center; gap: 7px;
-  transition: all .2s var(--ease); white-space: nowrap;
+  position: relative;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--border2); background: var(--white);
+  color: var(--text); font-size: 0.84rem; font-weight: 600;
+  white-space: nowrap; flex-shrink: 0;
+  transition: border-color 160ms var(--ease), background 160ms var(--ease);
 }
-.cartBtn:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
-.cartBtnActive { border-color: var(--green) !important; color: var(--green) !important; background: var(--green-light) !important; }
+.cartBtn:hover { border-color: var(--green); color: var(--green-dark); background: var(--green-light); }
+.cartBtnActive { border-color: var(--green); color: var(--green-dark); background: var(--green-light); }
 
 .badge {
-  position: absolute; top: -8px; right: -8px;
-  background: var(--green); color: #fff;
-  min-width: 20px; height: 20px; padding: 0 5px;
-  border-radius: 10px; font-size: 0.62rem;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-family: var(--font-display);
-  border: 2.5px solid var(--white);
-  animation: pop .3s var(--spring);
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 19px; height: 19px; padding: 0 5px;
+  border-radius: 4px; background: var(--green); color: #fff;
+  font-size: 0.7rem; font-weight: 700;
 }
 
-/* User pill */
-.userPill {
-  display: flex; align-items: center; gap: 7px;
-  padding: 6px 12px 6px 8px;
-  background: var(--bg); border-radius: var(--r);
-  border: 1px solid var(--border);
+.accountCluster {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding-left: 8px; border-left: 1px solid var(--border);
 }
-.userAvatar {
-  width: 26px; height: 26px; border-radius: 50%;
-  background: var(--green-light); display: flex;
-  align-items: center; justify-content: center;
-  font-size: 0.75rem; flex-shrink: 0;
+.accountName {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.84rem; font-weight: 600; color: var(--text2);
+  white-space: nowrap;
 }
-.userAvatar.admin { background: #fef3c7; }
-.userName {
-  font-size: 0.83rem; font-weight: 600; color: var(--text2);
-  max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.logoutBtn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text3); font-size: 0.8rem; font-weight: 500;
+  padding: 6px 12px; border-radius: var(--r-sm);
+  transition: color 150ms, border-color 150ms, background 150ms;
+  white-space: nowrap; flex-shrink: 0;
 }
-.userRole {
-  font-size: 0.68rem; font-weight: 700; color: var(--green);
-  padding: 1px 6px; background: var(--green-light); border-radius: 10px;
-}
-.userRole.admin { background: #fef3c7; color: #d97706; }
+.logoutBtn:hover { color: var(--red); border-color: rgba(220, 38, 38, 0.3); background: var(--red-light); }
 
 /* Hamburger */
 .menuBtn {
   display: none; align-items: center; justify-content: center;
-  width: 38px; height: 38px; border-radius: var(--r-sm);
-  border: 1.5px solid var(--border); background: var(--white);
-  margin-left: 8px; flex-shrink: 0;
-  transition: all .2s;
+  width: 40px; height: 40px; border-radius: var(--r-sm);
+  border: 1px solid var(--border2); background: var(--white);
+  flex-shrink: 0;
 }
-.menuBtn:hover { background: var(--bg); border-color: var(--border2); }
-.menuBtn span {
-  display: flex; flex-direction: column; gap: 4.5px;
-  width: 18px;
-}
+.menuBtn span { display: flex; flex-direction: column; gap: 4.5px; width: 18px; }
 .menuBtn span i {
-  display: block; height: 1.5px; background: var(--text2);
-  border-radius: 2px; transition: all .3s var(--ease);
+  display: block; height: 1.5px; background: var(--text);
+  border-radius: 2px; transition: transform 200ms var(--ease), opacity 200ms;
 }
 .menuBtn.open span i:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.menuBtn.open span i:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.menuBtn.open span i:nth-child(2) { opacity: 0; }
 .menuBtn.open span i:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
 /* Mobile drawer */
 .mobileMenu {
-  display: none; position: fixed; top: 66px; left: 0; right: 0;
+  display: none; position: fixed; top: 64px; left: 0; right: 0;
   background: var(--white); border-bottom: 1px solid var(--border);
-  box-shadow: 0 8px 32px rgba(0,0,0,.12); z-index: 199;
-  flex-direction: column; padding: 12px 16px 20px;
-  animation: slideDown .25s var(--ease);
+  box-shadow: var(--shadow-lg); z-index: 199;
+  flex-direction: column; padding: 12px 16px 20px; gap: 4px;
 }
 .mobileMenu.open { display: flex; }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-12px) } to { opacity: 1; transform: translateY(0) } }
 
 .mobileLink {
-  padding: 12px 16px; border-radius: var(--r-sm);
-  font-size: 0.95rem; font-weight: 500; color: var(--text2);
-  display: flex; align-items: center; gap: 10px;
-  transition: all .18s; border: none; background: none; width: 100%; text-align: left;
+  padding: 12px 14px; border-radius: var(--r-sm);
+  font-size: 0.94rem; font-weight: 500; color: var(--text2);
+  display: flex; align-items: center; justify-content: space-between;
 }
-.mobileLink:hover { background: var(--green-light); color: var(--green); }
-.mobileLinkActive { color: var(--green) !important; background: var(--green-light); font-weight: 700; }
-.mobileCartRow {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 0; border-top: 1px solid var(--border); margin-top: 4px;
-}
-.mobileAuthRow {
-  display: flex; gap: 8px; padding-top: 10px;
-  border-top: 1px solid var(--border); margin-top: 4px;
-}
-.mobileAuthRow .btn-primary,
-.mobileAuthRow .btn-outline { flex: 1; justify-content: center; }
+.mobileLinkActive { color: var(--green-dark); background: var(--green-light); font-weight: 600; }
 
-/* Responsive */
-@media (max-width: 900px) {
+.mobileFooter {
+  margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.mobileUserMeta { display: flex; flex-direction: column; gap: 2px; font-size: 0.85rem; }
+.mobileUserMeta span { font-size: 0.76rem; color: var(--text3); }
+.mobileAuthRow { display: flex; gap: 10px; }
+
+.open {}
+
+@media (max-width: 960px) {
   .links { display: none; }
-  .actions > *:not(.cartBtn):not(.menuBtn) { display: none; }
-  .menuBtn { display: flex; }
+  .accountCluster { display: none; }
+  .actions > a[href='/login'] { display: none; }
+  .menuBtn { display: inline-flex; }
 }
-@media (max-width: 500px) {
-  .inner { padding: 0 16px; }
-  .logo span { display: none; }
+@media (max-width: 520px) {
+  .inner { padding: 0 16px; gap: 12px; }
+  .cartBtn span:first-of-type { display: none; }
 }
-
-/* Modifier classes applied via template literals */
-.admin  { /* applied to .userAvatar and .userRole — color overrides handled inline */ }
-.open   { /* applied to .menuBtn — animation handled by .open span i selectors above */ }

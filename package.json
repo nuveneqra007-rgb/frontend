@@ -2,9 +2,11 @@
   "name": "tufarmacia-frontend",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0 --port 3000",
     "build": "vite build",
+    "lint": "eslint src --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -15,7 +17,12 @@
     "react-chartjs-2": "^5.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^10.15.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
     "vite": "^5.0.8"
   }
 }

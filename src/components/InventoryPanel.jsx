@@ -1,142 +1,229 @@
 import { useState, useEffect, useCallback } from 'react'
-import { adminApi, api } from '../services/api.js'
+import { api } from '../services/api.js'
 import { useApp } from '../context/AppContext.jsx'
+import {
+  IconAlert,
+  IconClipboard,
+  IconPlus,
+  IconCheck,
+  IconX,
+  IconRefresh,
+  IconPill,
+} from './Icons.jsx'
 
 const TYPE_LABELS = {
-  sale:       { label: 'Venta',      badge: 'badge-red',    symbol: '↓' },
-  restock:    { label: 'Reposición', badge: 'badge-green',  symbol: '↑' },
-  adjustment: { label: 'Ajuste',     badge: 'badge-blue',   symbol: '≈' },
-  return:     { label: 'Devolución', badge: 'badge-orange', symbol: '↺' },
-  expired:    { label: 'Vencido',    badge: 'badge-red',    symbol: '✕' },
+  sale:       { label: 'Venta',      badge: 'badge-red',    symbol: '-' },
+  restock:    { label: 'Reposición', badge: 'badge-green',  symbol: '+' },
+  adjustment: { label: 'Ajuste',     badge: 'badge-blue',   symbol: '±' },
+  return:     { label: 'Devolución', badge: 'badge-orange', symbol: '+' },
+  expired:    { label: 'Vencido',    badge: 'badge-red',    symbol: '-' },
 }
 
 export default function InventoryPanel() {
   const { products, showToast } = useApp()
-  const [tab, setTab]         = useState('summary')
-  const [summary, setSummary] = useState(null)
+  const [tab, setTab]             = useState('summary')
+  const [summary, setSummary]     = useState(null)
   const [movements, setMovements] = useState([])
-  const [alerts, setAlerts]   = useState([])
-  const [loading, setLoading] = useState(true)
+  const [alerts, setAlerts]       = useState([])
+  const [loading, setLoading]     = useState(true)
 
-  // Restock modal
   const [showRestock, setShowRestock] = useState(false)
   const [restockForm, setRestockForm] = useState({ productId: '', quantity: '', notes: '' })
   const [restocking, setRestocking]   = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const [sum, mov, al] = await Promise.all([
-        api.get('/admin/inventory/summary'),
-        api.get('/admin/inventory/movements?limit=40'),
-        api.get('/admin/inventory/alerts'),
-      ])
-      setSummary(sum)
-      setMovements(mov.data || [])
-      setAlerts(al)
-    } catch (err) { showToast(err.message, 'red') }
-    finally { setLoading(false) }
+  const fetchInventory = useCallback(() => {
+    return Promise.all([
+      api.get('/admin/inventory/summary'),
+      api.get('/admin/inventory/movements?limit=40'),
+      api.get('/admin/inventory/alerts'),
+    ])
+      .then(([sum, mov, al]) => {
+        setSummary(sum)
+        setMovements(mov.data || [])
+        setAlerts(Array.isArray(al) ? al : (al?.data || []))
+      })
+      .catch(err => {
+        showToast(err?.message || 'Error cargando inventario', 'red')
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }, [showToast])
 
-  useEffect(() => { load() }, [load])
+  const load = useCallback(() => {
+    setLoading(true)
+    return fetchInventory()
+  }, [fetchInventory])
+
+  useEffect(() => {
+    fetchInventory()
+  }, [fetchInventory])
 
   const handleRestock = async () => {
-    if (!restockForm.productId || !restockForm.quantity) return
+    if (!restockForm.productId || !restockForm.quantity || parseInt(restockForm.quantity, 10) <= 0) {
+      showToast('Selecciona un producto y una cantidad válida', 'orange')
+      return
+    }
     setRestocking(true)
     try {
       await api.post('/admin/inventory/restock', {
         productId: restockForm.productId,
-        quantity: parseInt(restockForm.quantity),
+        quantity: parseInt(restockForm.quantity, 10),
         notes: restockForm.notes || 'Reposición manual',
       })
       showToast('Stock actualizado correctamente', 'green')
       setShowRestock(false)
       setRestockForm({ productId: '', quantity: '', notes: '' })
       load()
-    } catch (err) { showToast(err.message, 'red') }
-    finally { setRestocking(false) }
+    } catch (err) {
+      showToast(err?.message || 'No se pudo reponer stock', 'red')
+    } finally {
+      setRestocking(false)
+    }
   }
 
-  if (loading) return <div style={{ textAlign: 'center', padding: 48 }}>Cargando inventario...</div>
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: 56 }}>
+        <div className="spinner spinner-dark" style={{ width: 26, height: 26 }} />
+      </div>
+    )
+  }
 
   const s = summary?.summary || {}
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       {/* KPI row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
         {[
-          { label: 'Productos activos', value: s.total_products || 0, color: 'var(--green)' },
-          { label: 'Sin stock',         value: s.out_of_stock   || 0, color: 'var(--red)' },
-          { label: 'Stock bajo',        value: s.low_stock      || 0, color: 'var(--orange)' },
-          { label: 'Valor inventario',  value: `RD$${parseFloat(s.inventory_value||0).toLocaleString('es',{maximumFractionDigits:0})}`, color: 'var(--blue)' },
+          { label: 'Productos activos', value: s.total_products || 0, color: 'var(--green-dark)' },
+          { label: 'Sin stock', value: s.out_of_stock || 0, color: 'var(--red)' },
+          { label: 'Stock bajo', value: s.low_stock || 0, color: 'var(--orange)' },
+          {
+            label: 'Valor inventario',
+            value: `RD$${parseFloat(s.inventory_value || 0).toLocaleString('es-DO', { maximumFractionDigits: 0 })}`,
+            color: 'var(--blue-dark)',
+          },
         ].map(k => (
-          <div key={k.label} className="card" style={{ textAlign: 'center', padding: '16px 12px' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: k.color }}>{k.value}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text3)', marginTop: 4 }}>{k.label}</div>
+          <div key={k.label} className="card" style={{ padding: '16px 18px' }}>
+            <div className="tabular-nums" style={{ fontSize: '1.45rem', fontWeight: 800, color: k.color, fontFamily: 'var(--font-display)' }}>
+              {k.value}
+            </div>
+            <div style={{ fontSize: '0.76rem', color: 'var(--text3)', marginTop: 4 }}>{k.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Tabs */}
+      {/* Tabs + Actions */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: 8 }}>
-          {[['summary', '📊 Alertas'], ['movements', '📋 Movimientos']].map(([id, label]) => (
-            <button key={id} className={tab === id ? 'btn-primary' : 'btn-ghost'}
-              style={{ fontSize: '0.82rem', padding: '7px 14px' }}
-              onClick={() => setTab(id)}>{label}</button>
-          ))}
+          <button
+            type="button"
+            className={tab === 'summary' ? 'btn-primary' : 'btn-ghost'}
+            style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+            onClick={() => setTab('summary')}
+          >
+            <IconAlert size={14} />
+            <span>Alertas ({alerts.length})</span>
+          </button>
+          <button
+            type="button"
+            className={tab === 'movements' ? 'btn-primary' : 'btn-ghost'}
+            style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+            onClick={() => setTab('movements')}
+          >
+            <IconClipboard size={14} />
+            <span>Movimientos ({movements.length})</span>
+          </button>
         </div>
-        <button className="btn-primary" style={{ fontSize: '0.82rem' }}
-          onClick={() => setShowRestock(true)}>
-          ➕ Reponer stock
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" className="btn-ghost" style={{ fontSize: '0.82rem', padding: '8px 12px' }} onClick={load}>
+            <IconRefresh size={14} />
+            <span>Actualizar</span>
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
+            style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+            onClick={() => setShowRestock(true)}
+          >
+            <IconPlus size={14} />
+            <span>Reponer stock</span>
+          </button>
+        </div>
       </div>
 
       {/* TAB: Alertas */}
       {tab === 'summary' && (
-        <div className="card">
-          <div style={{ fontWeight: 800, marginBottom: 12 }}>
-            ⚠️ Alertas de inventario activas ({alerts.length})
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: '0.94rem' }}>
+            <IconAlert size={16} />
+            <span>Alertas de inventario activas ({alerts.length})</span>
           </div>
           {alerts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text3)' }}>
-              ✅ Todos los productos tienen stock óptimo
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '32px 16px', color: 'var(--green-dark)', fontWeight: 500 }}>
+              <IconCheck size={17} />
+              <span>Todos los productos cuentan con stock óptimo</span>
             </div>
           ) : (
             <div className="table-wrap">
               <table>
                 <thead>
-                  <tr><th>Producto</th><th>SKU</th><th>Stock actual</th><th>Umbral</th><th>Alerta</th><th>Desde</th><th>Acción</th></tr>
+                  <tr>
+                    <th>Producto</th>
+                    <th>SKU</th>
+                    <th>Stock actual</th>
+                    <th>Umbral</th>
+                    <th>Estado</th>
+                    <th>Detectado</th>
+                    <th>Acción</th>
+                  </tr>
                 </thead>
                 <tbody>
-                  {alerts.map(a => (
-                    <tr key={a.id}>
-                      <td style={{ fontWeight: 600 }}>{a.emoji} {a.name}</td>
-                      <td style={{ color: 'var(--text3)', fontSize: '0.82rem' }}>{a.sku}</td>
-                      <td>
-                        <span style={{ fontWeight: 700, color: a.stock === 0 ? 'var(--red)' : 'var(--orange)' }}>
-                          {a.stock} uds.
-                        </span>
-                      </td>
-                      <td style={{ color: 'var(--text3)', fontSize: '0.85rem' }}>{a.low_stock_threshold}</td>
-                      <td>
-                        <span className={`badge ${a.alert_type === 'out_of_stock' ? 'badge-red' : 'badge-orange'}`}>
-                          {a.alert_type === 'out_of_stock' ? '⛔ Agotado' : '⚠️ Stock bajo'}
-                        </span>
-                      </td>
-                      <td style={{ fontSize: '0.78rem', color: 'var(--text3)' }}>
-                        {new Date(a.sent_at).toLocaleDateString('es-DO', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </td>
-                      <td>
-                        <button className="btn-primary" style={{ fontSize: '0.75rem', padding: '5px 10px' }}
-                          onClick={() => { setRestockForm(f => ({ ...f, productId: a.product_id })); setShowRestock(true) }}>
-                          Reponer
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {alerts.map(a => {
+                    const matched = products.find(p => p.id === a.product_id || p.sku === a.sku)
+                    return (
+                      <tr key={a.id}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 30, height: 30, borderRadius: 6, border: '1px solid var(--border)', overflow: 'hidden', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text4)' }}>
+                              {matched?.image ? <img src={matched.image} alt={a.name} referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <IconPill size={13} />}
+                            </div>
+                            <span style={{ fontWeight: 600, color: 'var(--text)' }}>{a.name}</span>
+                          </div>
+                        </td>
+                        <td className="mono" style={{ color: 'var(--text3)', fontSize: '0.8rem' }}>{a.sku}</td>
+                        <td className="tabular-nums">
+                          <span style={{ fontWeight: 700, color: a.stock === 0 ? 'var(--red)' : 'var(--orange)' }}>
+                            {a.stock} uds.
+                          </span>
+                        </td>
+                        <td className="tabular-nums" style={{ color: 'var(--text3)' }}>{a.low_stock_threshold}</td>
+                        <td>
+                          <span className={`badge ${a.alert_type === 'out_of_stock' ? 'badge-red' : 'badge-orange'}`}>
+                            {a.alert_type === 'out_of_stock' ? 'Agotado' : 'Stock bajo'}
+                          </span>
+                        </td>
+                        <td className="tabular-nums" style={{ fontSize: '0.78rem', color: 'var(--text3)' }}>
+                          {new Date(a.sent_at).toLocaleDateString('es-DO', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="btn-primary"
+                            style={{ fontSize: '0.76rem', padding: '5px 11px' }}
+                            onClick={() => {
+                              setRestockForm(f => ({ ...f, productId: String(a.product_id) }))
+                              setShowRestock(true)
+                            }}
+                          >
+                            Reponer
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -146,32 +233,47 @@ export default function InventoryPanel() {
 
       {/* TAB: Movimientos */}
       {tab === 'movements' && (
-        <div className="card">
-          <div style={{ fontWeight: 800, marginBottom: 12 }}>📋 Historial de movimientos</div>
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: '0.94rem' }}>
+            <IconClipboard size={16} />
+            <span>Historial de movimientos (Kardex)</span>
+          </div>
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Stock antes</th><th>Stock después</th><th>Referencia</th><th>Fecha</th></tr>
+                <tr>
+                  <th>Producto</th>
+                  <th>Tipo</th>
+                  <th>Cantidad</th>
+                  <th>Stock antes</th>
+                  <th>Stock después</th>
+                  <th>Referencia</th>
+                  <th>Fecha</th>
+                </tr>
               </thead>
               <tbody>
                 {movements.length === 0 && (
-                  <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text3)', padding: 24 }}>Sin movimientos registrados</td></tr>
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text3)', padding: 28 }}>
+                      Sin movimientos registrados
+                    </td>
+                  </tr>
                 )}
                 {movements.map(m => {
-                  const cfg = TYPE_LABELS[m.type] || { label: m.type, badge: 'badge-blue', symbol: '·' }
+                  const cfg = TYPE_LABELS[m.type] || { label: m.type, badge: 'badge-blue', symbol: '' }
                   return (
                     <tr key={m.id}>
-                      <td style={{ fontWeight: 600 }}>{m.emoji} {m.product_name}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--text)' }}>{m.product_name}</td>
                       <td><span className={`badge ${cfg.badge}`}>{cfg.label}</span></td>
-                      <td style={{ fontWeight: 700, color: m.quantity < 0 ? 'var(--red)' : 'var(--green)' }}>
-                        {cfg.symbol} {Math.abs(m.quantity)}
+                      <td className="tabular-nums" style={{ fontWeight: 700, color: m.quantity < 0 ? 'var(--red)' : 'var(--green-dark)' }}>
+                        {cfg.symbol}{Math.abs(m.quantity)}
                       </td>
-                      <td style={{ color: 'var(--text3)' }}>{m.stock_before}</td>
-                      <td style={{ fontWeight: 600 }}>{m.stock_after}</td>
+                      <td className="tabular-nums" style={{ color: 'var(--text3)' }}>{m.stock_before}</td>
+                      <td className="tabular-nums" style={{ fontWeight: 600, color: 'var(--text)' }}>{m.stock_after}</td>
                       <td style={{ fontSize: '0.78rem', color: 'var(--text3)' }}>
-                        {m.notes ? m.notes.slice(0, 30) : '—'}
+                        {m.notes ? m.notes.slice(0, 42) : '—'}
                       </td>
-                      <td style={{ fontSize: '0.78rem', color: 'var(--text3)' }}>
+                      <td className="tabular-nums" style={{ fontSize: '0.78rem', color: 'var(--text3)' }}>
                         {new Date(m.created_at).toLocaleDateString('es-DO', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </td>
                     </tr>
@@ -187,37 +289,64 @@ export default function InventoryPanel() {
       {showRestock && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowRestock(false)}>
           <div className="modal" style={{ maxWidth: 440 }}>
-            <h3 className="modal-title">➕ Reponer stock</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 className="modal-title" style={{ marginBottom: 0 }}>Reponer stock</h3>
+              <button
+                type="button"
+                onClick={() => setShowRestock(false)}
+                aria-label="Cerrar"
+                style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text3)' }}
+              >
+                <IconX size={16} />
+              </button>
+            </div>
             <div className="form-group">
               <label className="form-label">Producto</label>
-              <select className="form-input" value={restockForm.productId}
-                onChange={e => setRestockForm(f => ({ ...f, productId: e.target.value }))}>
+              <select
+                className="form-input"
+                value={restockForm.productId}
+                onChange={e => setRestockForm(f => ({ ...f, productId: e.target.value }))}
+              >
                 <option value="">Seleccionar producto...</option>
                 {products.map(p => (
                   <option key={p.id} value={p.id}>
-                    {p.emoji} {p.name} — Stock: {p.stock}
+                    {p.name} ({p.sku || 'S/SKU'}) — Stock: {p.stock}
                   </option>
                 ))}
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Cantidad a agregar</label>
-              <input className="form-input" type="number" min="1" placeholder="Ej: 50"
+              <label className="form-label">Cantidad a ingresar</label>
+              <input
+                className="form-input tabular-nums"
+                type="number"
+                min="1"
+                placeholder="Ej: 50"
                 value={restockForm.quantity}
-                onChange={e => setRestockForm(f => ({ ...f, quantity: e.target.value }))} />
+                onChange={e => setRestockForm(f => ({ ...f, quantity: e.target.value }))}
+              />
             </div>
             <div className="form-group">
-              <label className="form-label">Notas (opcional)</label>
-              <input className="form-input" placeholder="Ej: Recepción de pedido proveedor"
+              <label className="form-label">Nota o factura de proveedor</label>
+              <input
+                className="form-input"
+                placeholder="Ej: Recepción lote proveedor FAC-0821"
                 value={restockForm.notes}
-                onChange={e => setRestockForm(f => ({ ...f, notes: e.target.value }))} />
+                onChange={e => setRestockForm(f => ({ ...f, notes: e.target.value }))}
+              />
             </div>
-            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-              <button className="btn-primary" style={{ flex: 1 }}
-                onClick={handleRestock} disabled={restocking}>
-                {restocking ? 'Guardando...' : '✅ Confirmar reposición'}
+            <div className="modal-actions">
+              <button type="button" className="btn-ghost" onClick={() => setShowRestock(false)}>
+                Cancelar
               </button>
-              <button className="btn-ghost" onClick={() => setShowRestock(false)}>Cancelar</button>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handleRestock}
+                disabled={restocking}
+              >
+                {restocking ? 'Guardando...' : 'Confirmar reposición'}
+              </button>
             </div>
           </div>
         </div>

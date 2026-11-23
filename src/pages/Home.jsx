@@ -2,7 +2,15 @@ import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
 import ProductCard from '../components/ProductCard.jsx'
-import { CATEGORIES } from '../data/datos.js'
+import { CATEGORIES, HERO_IMAGE } from '../data/datos.js'
+import {
+  IconSearch,
+  IconArrowRight,
+  IconShield,
+  IconTruck,
+  IconStethoscope,
+  IconLock,
+} from '../components/Icons.jsx'
 import styles from './Home.module.css'
 
 export default function Home() {
@@ -11,140 +19,120 @@ export default function Home() {
   const [activeCat, setActiveCat] = useState('Todos')
 
   const filtered = useMemo(() => products.filter(p => {
-    const matchCat    = activeCat === 'Todos' || p.cat === activeCat
-    const matchSearch = !search ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.cat.toLowerCase().includes(search.toLowerCase())
+    const matchCat = activeCat === 'Todos' || p.cat === activeCat
+    const q = search.trim().toLowerCase()
+    const matchSearch = !q ||
+      p.name.toLowerCase().includes(q) ||
+      p.cat.toLowerCase().includes(q) ||
+      (p.activeIngredient || '').toLowerCase().includes(q)
     return matchCat && matchSearch
   }), [products, search, activeCat])
 
-  const totalOrders = orders.length
+  const visibleProducts = search || activeCat !== 'Todos' ? filtered : filtered.slice(0, 8)
   const inStockCount = products.filter(p => p.stock > 0).length
+  const totalOrders = orders.length
 
   return (
     <div>
-      {/* ── HERO ──────────────────────────────────────────────────────────── */}
+      {/* ── HERO SPLIT ──────────────────────────────────────────────────── */}
       <section className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.heroContent}>
-            <div className={styles.heroBadge}>
-              <div className={styles.heroBadgeDot} />
-              Farmacia certificada · Santo Domingo
-            </div>
-
             <h1 className={styles.heroTitle}>
               Tu medicamento,
-              <span className={styles.heroAccent}>en minutos</span>
+              <br />
+              <span className={styles.heroTitleAccent}>en minutos</span>
             </h1>
 
             <p className={styles.heroDesc}>
-              Compra medicamentos, vitaminas y más desde la comodidad de tu hogar.
-              Entrega rápida, precios justos y atención farmacéutica 24/7.
+              Compra medicamentos, vitaminas y más desde la comodidad de tu hogar. Entrega rápida, precios justos y atención farmacéutica 24/7.
             </p>
 
             <div className={styles.heroCta}>
-              <Link to="/products" className={styles.heroBtnMain}>
-                Ver catálogo →
+              <Link to="/products" className="btn-primary" style={{ padding: '12px 24px', fontSize: '0.94rem' }}>
+                <span>Explorar catálogo</span>
+                <IconArrowRight size={16} />
               </Link>
-              <Link to="/contact" className={styles.heroBtnSecondary}>
-                📞 Consultarnos
+              <Link to="/contact" className="btn-outline" style={{ padding: '12px 22px', fontSize: '0.94rem' }}>
+                Consultar farmacéutico
               </Link>
             </div>
           </div>
 
-          {/* Visual card */}
-          <div className={styles.heroVisual}>
-            <div className={styles.heroCard} style={{ position: 'relative' }}>
-<img
-  src="https://www.pmfarma.com/articulos/contenido/4331/image/farmaceutica-joven-hispana-sonriendo-segura-de-pie-con-gesto-de-brazos-cruzados-en-la-farmacia.jpg"
-  alt="Farmacéutica"
-  style={{
-    width: '100%',
-    height: 'clamp(180px, 25vw, 320px)',
-    objectFit: 'cover',
-    objectPosition: 'top center',
-    borderRadius: '12px',
-    display: 'block',
-  }}
-/>
-              <div className={styles.heroStats}>
-                <div className={styles.heroStat}>
-                  <div className={styles.heroStatVal} style={{ color: 'var(--green)' }}>{inStockCount}+</div>
-                  <div className={styles.heroStatLabel}>Productos disponibles</div>
-                </div>
-                <div className={styles.heroStat}>
-                  <div className={styles.heroStatVal} style={{ color: 'var(--blue)' }}>24h</div>
-                  <div className={styles.heroStatLabel}>Entrega garantizada</div>
-                </div>
-                <div className={styles.heroStat}>
-                  <div className={styles.heroStatVal} style={{ color: 'var(--orange)' }}>{totalOrders || '0'}</div>
-                  <div className={styles.heroStatLabel}>Pedidos procesados</div>
-                </div>
-                <div className={styles.heroStat}>
-                  <div className={styles.heroStatVal} style={{ color: 'var(--green)' }}>4.9★</div>
-                  <div className={styles.heroStatLabel}>Calificación clientes</div>
-                </div>
-              </div>
+          <div className={styles.heroMedia}>
+            <img
+              src={HERO_IMAGE}
+              alt="Farmacéutica clínica revisando inventario en TuFarmacia"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+        </div>
 
-              {/* Floating tags */}
-              <div className={`${styles.heroFloat} ${styles.heroFloat1}`}>
-                <div className={styles.floatDot} style={{ background: 'var(--green)' }} />
-                Envío gratis +RD$500
+        {/* Full-width 4-column metric & trust strip below the hero split */}
+        <div className={styles.metricsBand}>
+          <div className={styles.metricsGrid}>
+            <div className={styles.metricItem}>
+              <IconShield size={18} className={styles.metricIcon} />
+              <div>
+                <div className={`${styles.metricValue} tabular-nums`}>{inStockCount} referencias</div>
+                <div className={styles.metricLabel}>Stock verificado con control de lote</div>
               </div>
-              <div className={`${styles.heroFloat} ${styles.heroFloat2}`}>
-                <div className={styles.floatDot} style={{ background: 'var(--blue)' }} />
-                Pago seguro SSL
+            </div>
+            <div className={styles.metricItem}>
+              <IconTruck size={18} className={styles.metricIcon} />
+              <div>
+                <div className={styles.metricValue}>Entrega hoy mismo</div>
+                <div className={styles.metricLabel}>Gratis en pedidos sobre RD$500</div>
+              </div>
+            </div>
+            <div className={styles.metricItem}>
+              <IconStethoscope size={18} className={styles.metricIcon} />
+              <div>
+                <div className={styles.metricValue}>Validación clínica Rx</div>
+                <div className={styles.metricLabel}>Dispensación responsable y asesoría</div>
+              </div>
+            </div>
+            <div className={styles.metricItem}>
+              <IconLock size={18} className={styles.metricIcon} />
+              <div>
+                <div className={`${styles.metricValue} tabular-nums`}>{totalOrders}+ órdenes</div>
+                <div className={styles.metricLabel}>Facturación con ITBIS 18% transparente</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* ── FEATURED CATALOGUE ──────────────────────────────────────────── */}
       <div className="page-wrapper">
-
-        {/* ── TRUST BAR ───────────────────────────────────────────────────── */}
-        <div className={styles.trustBar}>
-          {[
-            { icon: '🔒', title: 'Pago 100% Seguro', desc: 'Transacciones protegidas con cifrado SSL', color: 'green' },
-            { icon: '🚀', title: 'Envío el mismo día', desc: 'Pedidos antes de las 3pm llegan hoy', color: 'blue' },
-            { icon: '💬', title: 'Farmacéutico 24/7', desc: 'Atención y asesoría en cualquier momento', color: 'green' },
-          ].map(item => (
-            <div key={item.title} className={`card ${styles.trustItem}`}>
-              <div className={`${styles.trustIcon} ${item.color === 'green' ? styles.trustIconGreen : styles.trustIconBlue}`}>
-                {item.icon}
-              </div>
-              <div>
-                <h4 className={styles.trustTitle}>{item.title}</h4>
-                <p className={styles.trustDesc}>{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── CATALOGUE ───────────────────────────────────────────────────── */}
         <div className={styles.sectionHeader}>
-          <div className={styles.sectionHeaderLeft}>
-            <h2 className="section-title">Nuestro Catálogo</h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginTop: 4 }}>
-              {products.length} productos · {products.filter(p => p.stock > 0).length} disponibles
+          <div>
+            <h2 className="section-title">Catálogo farmacéutico</h2>
+            <p className={`${styles.sectionSub} tabular-nums`}>
+              {products.length} productos registrados · {inStockCount} con disponibilidad inmediata
             </p>
           </div>
+
           <div className={styles.searchBox}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
+            <IconSearch size={15} className={styles.searchIcon} />
             <input
-              type="text" placeholder="Buscar producto..."
-              value={search} onChange={e => setSearch(e.target.value)}
+              type="text"
+              placeholder="Buscar medicamento o principio activo..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              aria-label="Buscar producto"
             />
           </div>
         </div>
 
-        {/* Category tabs */}
-        <div className={styles.catTabs}>
+        {/* Segmented Category Filter Controls */}
+        <div className={styles.catTabs} role="tablist" aria-label="Categorías de productos">
           {CATEGORIES.map(cat => (
             <button
               key={cat}
+              type="button"
+              role="tab"
+              aria-selected={activeCat === cat}
               className={`${styles.catTab} ${activeCat === cat ? styles.catTabActive : ''}`}
               onClick={() => setActiveCat(cat)}
             >
@@ -153,39 +141,54 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Grid */}
-        {filtered.length > 0 ? (
-          <div className={styles.grid}>
-            {filtered.map((p, i) => <ProductCard key={p.id} product={p} animDelay={i * 45} />)}
-          </div>
+        {visibleProducts.length > 0 ? (
+          <>
+            <div className={styles.grid}>
+              {visibleProducts.map((p, i) => (
+                <ProductCard key={p.id} product={p} animDelay={i * 25} />
+              ))}
+            </div>
+
+            {!search && activeCat === 'Todos' && filtered.length > 8 && (
+              <div className={styles.viewAllWrap}>
+                <Link to="/products" className="btn-outline">
+                  <span>Ver los {filtered.length} productos del catálogo</span>
+                  <IconArrowRight size={15} />
+                </Link>
+              </div>
+            )}
+          </>
         ) : (
-          <div className="empty-state">
-            <div className="empty-icon">🔍</div>
+          <div className="card empty-state">
+            <div className="empty-icon">
+              <IconSearch size={24} />
+            </div>
             <h3>Sin resultados</h3>
-            <p>No encontramos productos con ese criterio</p>
-            <button className="btn-primary" onClick={() => { setSearch(''); setActiveCat('Todos') }}>
-              Limpiar filtros
+            <p>No encontramos productos que coincidan con "{search}".</p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => { setSearch(''); setActiveCat('Todos') }}
+            >
+              Restablecer filtros
             </button>
           </div>
         )}
 
-        {/* CTA bottom */}
-        <div style={{
-          marginTop: 56, padding: '40px 32px', borderRadius: 'var(--r-xl)',
-          background: 'linear-gradient(135deg, var(--green-light), var(--blue-light))',
-          border: '1px solid var(--border)', textAlign: 'center'
-        }}>
-          <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: 10 }}>
-            ¿Necesitas una receta? 👨‍⚕️
-          </h3>
-          <p style={{ color: 'var(--text2)', marginBottom: 22, maxWidth: 480, margin: '0 auto 22px' }}>
-            Consulta con nuestros farmacéuticos certificados sin costo adicional.
-            Atención personalizada para toda la familia.
-          </p>
-          <Link to="/contact" className="btn-primary" style={{ fontSize: '0.95rem', padding: '12px 28px' }}>
-            Contactar farmacéutico →
+        {/* ── CLINICAL ASSISTANCE CALLOUT ───────────────────────────────── */}
+        <section className={styles.consultCard}>
+          <div className={styles.consultText}>
+            <h3>¿Necesitas orientación sobre dosis o recetas?</h3>
+            <p>
+              Nuestro equipo de farmacéuticos colegiados responde consultas sobre interacciones,
+              equivalencias genéricas y disponibilidad de antibióticos bajo receta.
+            </p>
+          </div>
+          <Link to="/contact" className="btn-primary">
+            <span>Contactar al equipo clínico</span>
+            <IconArrowRight size={15} />
           </Link>
-        </div>
+        </section>
       </div>
     </div>
   )

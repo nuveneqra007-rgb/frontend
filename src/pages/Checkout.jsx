@@ -1,22 +1,36 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from '../data/datos.js'
+import {
+  IconMapPin,
+  IconCreditCard,
+  IconBanknote,
+  IconClipboard,
+  IconCheck,
+  IconShield,
+  IconLock,
+  IconPackage,
+  IconCart,
+  IconPill,
+  IconArrowRight,
+} from '../components/Icons.jsx'
 import styles from './Checkout.module.css'
 
 const STEPS = [
-  { id: 0, label: 'Dirección', icon: '📍' },
-  { id: 1, label: 'Pago',      icon: '💳' },
-  { id: 2, label: 'Revisar',   icon: '📋' },
+  { id: 0, label: 'Entrega' },
+  { id: 1, label: 'Pago' },
+  { id: 2, label: 'Confirmación' },
 ]
 
 function StepIndicator({ current }) {
   return (
-    <div className={styles.stepsWrap}>
+    <div className={styles.stepsWrap} aria-label="Progreso del checkout">
       {STEPS.map((s, i) => (
         <div key={s.id} className={styles.step}>
           <div className={`${styles.stepInner} ${i === current ? styles.stepActive : ''} ${i < current ? styles.stepDone : ''}`}>
             <div className={styles.stepNum}>
-              {i < current ? '✓' : i + 1}
+              {i < current ? <IconCheck size={14} /> : <span className="tabular-nums">{i + 1}</span>}
             </div>
             <span className={styles.stepLabel}>{s.label}</span>
           </div>
@@ -31,71 +45,127 @@ function StepIndicator({ current }) {
 
 function OrderSidebar({ cart, cartSubtotal, cartTax, shipping, grandTotal }) {
   return (
-    <div className={`card ${styles.orderSummary}`}>
-      <div className={styles.summaryTitle}>📦 Tu Pedido</div>
-      {cart.map(i => (
-        <div key={i.id} className={styles.summaryItem}>
-          <span>{i.emoji} {i.name} <span style={{ color: 'var(--text4)' }}>×{i.qty}</span></span>
-          <span>RD${(i.price * i.qty).toFixed(2)}</span>
-        </div>
-      ))}
+    <aside className={`card ${styles.orderSummary}`}>
+      <div className={styles.summaryTitle}>
+        <IconPackage size={16} />
+        <span>Resumen del pedido</span>
+      </div>
+
+      <div className={styles.summaryItemsList}>
+        {cart.map(i => (
+          <div key={i.id} className={styles.summaryItem}>
+            <div className={styles.summaryThumb}>
+              {i.image ? (
+                <img src={i.image} alt={i.name} referrerPolicy="no-referrer" />
+              ) : (
+                <IconPill size={14} />
+              )}
+            </div>
+            <div className={styles.summaryItemName}>
+              <span>{i.name}</span>
+              <span className={`${styles.summaryItemQty} tabular-nums`}>× {i.qty}</span>
+            </div>
+            <span className={`${styles.summaryItemPrice} tabular-nums`}>
+              RD${(i.price * i.qty).toFixed(2)}
+            </span>
+          </div>
+        ))}
+      </div>
+
       <div className={styles.summaryDivider} />
-      <div className={styles.summaryItem}><span>Subtotal</span><span>RD${cartSubtotal.toFixed(2)}</span></div>
-      <div className={styles.summaryItem}><span>ITBIS (18%)</span><span>RD${cartTax.toFixed(2)}</span></div>
-      <div className={styles.summaryItem}>
+
+      <div className={styles.summaryRow}>
+        <span>Subtotal</span>
+        <span className="tabular-nums">RD${cartSubtotal.toFixed(2)}</span>
+      </div>
+      <div className={styles.summaryRow}>
+        <span>ITBIS (18%)</span>
+        <span className="tabular-nums">RD${cartTax.toFixed(2)}</span>
+      </div>
+      <div className={styles.summaryRow}>
         <span>Envío</span>
-        <span style={{ color: shipping === 0 ? 'var(--green)' : 'inherit' }}>
-          {shipping === 0 ? '🎁 Gratis' : `RD${shipping.toFixed(2)}`}
+        <span className="tabular-nums" style={{ color: shipping === 0 ? 'var(--green-dark)' : 'inherit', fontWeight: shipping === 0 ? 600 : 500 }}>
+          {shipping === 0 ? 'Gratis' : `RD$${shipping.toFixed(2)}`}
         </span>
       </div>
+
       <div className={styles.summaryDivider} />
+
       <div className={styles.summaryTotal}>
         <span>Total</span>
-        <span className={styles.summaryTotalAmt}>RD${grandTotal.toFixed(2)}</span>
+        <span className={`${styles.summaryTotalAmt} tabular-nums`}>RD${grandTotal.toFixed(2)}</span>
       </div>
-    </div>
+    </aside>
   )
 }
 
 export default function Checkout() {
   const { cart, cartSubtotal, cartTax, cartTotal, placeOrder, clearCart, showToast, user } = useApp()
-  const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [completedOrder, setCompletedOrder] = useState(null)
 
-  const shipping = cartSubtotal > 500 ? 0 : 150
+  const shipping = cartSubtotal > FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE
   const grandTotal = cartTotal + shipping
+  const rxItems = cart.filter(i => i.requiresPrescription)
+  const hasRxItems = rxItems.length > 0
 
   const [address, setAddress] = useState({
-    name: user?.name || '', phone: '', address: '', city: 'Santo Domingo', sector: '',
+    name: user?.name || '',
+    phone: '',
+    address: '',
+    city: 'Santo Domingo',
+    sector: '',
+    prescriptionRef: '',
+    rxConfirmed: false,
   })
   const [payment, setPayment] = useState({
-    method: 'card', cardNumber: '', cardName: '', expiry: '', cvv: '',
+    method: 'card',
+    cardNumber: '',
+    cardName: '',
+    expiry: '',
+    cvv: '',
   })
   const [errors, setErrors] = useState({})
 
-  const setAddr = f => e => { setAddress(a => ({ ...a, [f]: e.target.value })); if (errors[f]) setErrors(er => ({ ...er, [f]: null })) }
-  const setPay  = f => e => { setPayment(p => ({ ...p, [f]: e.target.value }));  if (errors[f]) setErrors(er => ({ ...er, [f]: null })) }
+  const setAddr = f => e => {
+    const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value
+    setAddress(a => ({ ...a, [f]: val }))
+    if (errors[f]) setErrors(er => ({ ...er, [f]: null }))
+  }
+  const setPay = f => e => {
+    setPayment(p => ({ ...p, [f]: e.target.value }))
+    if (errors[f]) setErrors(er => ({ ...er, [f]: null }))
+  }
 
   const validateAddress = () => {
     const errs = {}
-    if (!address.name.trim())   errs.name    = 'Requerido'
-    if (!address.phone.trim() || address.phone.length < 7) errs.phone = 'Número inválido'
+    if (!address.name.trim()) errs.name = 'Requerido'
+    if (!address.phone.trim() || address.phone.replace(/\D/g, '').length < 7) errs.phone = 'Número de teléfono inválido'
     if (!address.address.trim()) errs.address = 'Requerido'
-    if (!address.sector.trim()) errs.sector  = 'Requerido'
-    setErrors(errs); return Object.keys(errs).length === 0
+    if (!address.sector.trim()) errs.sector = 'Requerido'
+    if (hasRxItems) {
+      if (!address.prescriptionRef.trim() || address.prescriptionRef.trim().length < 4) {
+        errs.prescriptionRef = 'Ingresa el código o referencia de tu receta médica (ej. RX-2026-4102)'
+      }
+      if (!address.rxConfirmed) {
+        errs.rxConfirmed = 'Debes confirmar que presentaras la receta médica original al recibir el pedido'
+      }
+    }
+    setErrors(errs)
+    return Object.keys(errs).length === 0
   }
 
   const validatePayment = () => {
     if (payment.method === 'cash') return true
     const errs = {}
-    const raw = payment.cardNumber.replace(/\s/g,'')
-    if (raw.length < 16)              errs.cardNumber = 'Número de tarjeta inválido'
-    if (!payment.cardName.trim())     errs.cardName   = 'Requerido'
+    const raw = payment.cardNumber.replace(/\s/g, '')
+    if (raw.length < 16) errs.cardNumber = 'Número de tarjeta inválido'
+    if (!payment.cardName.trim()) errs.cardName = 'Requerido'
     if (!/^\d{2}\/\d{2}$/.test(payment.expiry)) errs.expiry = 'Formato MM/AA'
-    if (payment.cvv.length < 3)       errs.cvv        = 'CVV inválido'
-    setErrors(errs); return Object.keys(errs).length === 0
+    if (payment.cvv.length < 3) errs.cvv = 'CVV inválido'
+    setErrors(errs)
+    return Object.keys(errs).length === 0
   }
 
   const handleNext = () => {
@@ -105,69 +175,107 @@ export default function Checkout() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleBack = () => { setStep(s => s - 1); setErrors({}) }
+  const handleBack = () => {
+    setStep(s => s - 1)
+    setErrors({})
+  }
 
   const handleConfirm = async () => {
     setLoading(true)
-    await new Promise(r => setTimeout(r, 1600))
-    const order = placeOrder({
-      userId: user.id, userName: user.name, userEmail: user.email,
-      items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty, emoji: i.emoji, cat: i.cat })),
-      subtotal: cartSubtotal, tax: cartTax, shipping, total: grandTotal,
-      address, paymentMethod: payment.method,
-    })
-    clearCart()
-    setCompletedOrder(order)
-    showToast('¡Pedido confirmado! 🎉', 'green')
-    setLoading(false)
+    try {
+      await new Promise(r => setTimeout(r, 900))
+      const order = await placeOrder({
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+        items: cart.map(i => ({
+          id: i.id,
+          name: i.name,
+          price: i.price,
+          qty: i.qty,
+          cat: i.cat,
+          image: i.image,
+        })),
+        subtotal: cartSubtotal,
+        tax: cartTax,
+        shipping,
+        total: grandTotal,
+        address: {
+          name: address.name,
+          phone: address.phone,
+          address: address.address,
+          city: address.city,
+          sector: address.sector,
+        },
+        prescriptionRef: hasRxItems ? address.prescriptionRef.trim() : undefined,
+        paymentMethod: payment.method,
+      })
+      clearCart()
+      setCompletedOrder(order)
+      showToast('Pedido confirmado correctamente', 'green')
+    } catch (err) {
+      showToast(err?.message || 'No se pudo procesar el pedido', 'red')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const formatCard = v => v.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim()
+  const formatCard = v => v.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim()
 
-  /* ── Empty cart guard ── */
   if (!completedOrder && cart.length === 0) {
     return (
       <div className="page-wrapper">
         <div className="card empty-state">
-          <div className="empty-icon">🛒</div>
-          <h3>Carrito vacío</h3>
-          <p>Agrega productos antes de hacer checkout</p>
-          <Link to="/products" className="btn-primary">Ver productos</Link>
+          <div className="empty-icon">
+            <IconCart size={26} />
+          </div>
+          <h3>Tu carrito está vacío</h3>
+          <p>Agrega medicamentos o suplementos antes de continuar con el checkout.</p>
+          <Link to="/products" className="btn-primary">
+            <span>Ver catálogo</span>
+            <IconArrowRight size={15} />
+          </Link>
         </div>
       </div>
     )
   }
 
-  /* ── Success screen ── */
   if (completedOrder) {
+    const orderCode = completedOrder.order_number || completedOrder.id
     return (
       <div className="page-wrapper">
         <div className={styles.successWrap}>
           <div className={`card ${styles.successCard}`}>
-            <span className={styles.successAnim}>🎉</span>
-            <h2 className={styles.successTitle}>¡Pedido Confirmado!</h2>
-            <div className={styles.successOrderId}>
-              📋 Orden {completedOrder.id}
+            <div className={styles.successIcon}>
+              <IconCheck size={28} />
+            </div>
+            <h2 className={styles.successTitle}>Pedido confirmado</h2>
+            <div className={`${styles.successOrderId} mono`}>
+              <IconClipboard size={15} />
+              <span>Orden {orderCode}</span>
             </div>
             <p className={styles.successMsg}>
-              Recibimos tu pedido. Nos comunicaremos al <strong>{address.phone}</strong> para coordinar la entrega en <strong>{address.sector}, {address.city}</strong>.
+              Recibimos tu solicitud. Nuestro equipo farmacéutico verificará el despacho y se comunicará al{' '}
+              <strong className="tabular-nums">{address.phone}</strong> para coordinar la entrega en{' '}
+              <strong>{address.sector}, {address.city}</strong>.
             </p>
             <div className={styles.successDetails}>
               {[
-                ['💰 Total pagado',       `RD${grandTotal.toFixed(2)}`],
-                ['💳 Método de pago',     payment.method === 'card' ? `Tarjeta ****${payment.cardNumber.replace(/\s/g,'').slice(-4)}` : 'Efectivo contra entrega'],
-                ['📍 Dirección',          `${address.address}, ${address.sector}`],
-                ['⏱️ Tiempo estimado',    'Hoy · 2–4 horas'],
-                ['📌 Estado',             'Pendiente de confirmación'],
+                ['Total pagado', `RD$${grandTotal.toFixed(2)}`],
+                ['Método de pago', payment.method === 'card' ? `Tarjeta ****${payment.cardNumber.replace(/\s/g, '').slice(-4)}` : 'Efectivo contra entrega'],
+                ['Dirección', `${address.address}, ${address.sector}`],
+                ...(completedOrder.prescriptionRef ? [['Receta médica (Rx)', completedOrder.prescriptionRef]] : []),
+                ['Tiempo estimado', 'Hoy · 2–4 horas'],
+                ['Estado', completedOrder.status || 'Pendiente'],
               ].map(([k, v]) => (
                 <div key={k} className={styles.successDetailRow}>
                   <span>{k}</span>
-                  <strong>{v}</strong>
+                  <strong className="tabular-nums">{v}</strong>
                 </div>
               ))}
             </div>
             <div className={styles.successBtns}>
-              <Link to="/orders"   className="btn-primary">Ver mis pedidos</Link>
+              <Link to="/orders" className="btn-primary">Ver mis pedidos</Link>
               <Link to="/products" className="btn-outline">Seguir comprando</Link>
             </div>
           </div>
@@ -178,9 +286,9 @@ export default function Checkout() {
 
   return (
     <div className="page-wrapper">
-      <div style={{ marginBottom: 32 }}>
+      <div style={{ marginBottom: 28 }}>
         <h2 className="section-title">Checkout</h2>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginTop: 4 }}>
+        <p className="tabular-nums" style={{ fontSize: '0.86rem', color: 'var(--text3)', marginTop: 4 }}>
           {cart.length} {cart.length === 1 ? 'producto' : 'productos'} · RD${grandTotal.toFixed(2)} total
         </p>
       </div>
@@ -188,149 +296,243 @@ export default function Checkout() {
       <StepIndicator current={step} />
 
       <div className={styles.layout}>
-        {/* Form panel */}
         <div className={`card ${styles.formCard}`}>
-
-          {/* ── STEP 0: ADDRESS ── */}
           {step === 0 && (
             <div>
-              <h3>📍 Dirección de Entrega</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div className="form-group" style={{ gridColumn: '1/-1' }}>
+              <h3 className={styles.stepTitle}>
+                <IconMapPin size={18} />
+                <span>Dirección de entrega</span>
+              </h3>
+              <div className={styles.grid2}>
+                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                   <label className="form-label">Nombre completo *</label>
-                  <input className={`form-input ${errors.name ? 'error' : ''}`} value={address.name} onChange={setAddr('name')} placeholder="Juan García" />
+                  <input
+                    className={`form-input ${errors.name ? 'error' : ''}`}
+                    value={address.name}
+                    onChange={setAddr('name')}
+                    placeholder="María García"
+                  />
                   {errors.name && <div className="form-error">{errors.name}</div>}
                 </div>
                 <div className="form-group">
                   <label className="form-label">Teléfono *</label>
-                  <input className={`form-input ${errors.phone ? 'error' : ''}`} value={address.phone} onChange={setAddr('phone')} placeholder="809-555-0000" />
+                  <input
+                    className={`form-input ${errors.phone ? 'error' : ''}`}
+                    value={address.phone}
+                    onChange={setAddr('phone')}
+                    placeholder="809-555-0000"
+                  />
                   {errors.phone && <div className="form-error">{errors.phone}</div>}
                 </div>
                 <div className="form-group">
                   <label className="form-label">Ciudad</label>
                   <select className="form-input" value={address.city} onChange={setAddr('city')}>
-                    {['Santo Domingo','Santiago','La Romana','Puerto Plata','San Pedro de Macorís','La Vega','Higüey','Baní'].map(c => <option key={c}>{c}</option>)}
+                    {['Santo Domingo', 'Santiago', 'La Romana', 'Puerto Plata', 'San Pedro de Macorís', 'La Vega', 'Higüey', 'Baní'].map(c => (
+                      <option key={c}>{c}</option>
+                    ))}
                   </select>
                 </div>
-                <div className="form-group" style={{ gridColumn: '1/-1' }}>
-                  <label className="form-label">Dirección *</label>
-                  <input className={`form-input ${errors.address ? 'error' : ''}`} value={address.address} onChange={setAddr('address')} placeholder="Calle Principal #123, Apt 4B" />
+                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                  <label className="form-label">Dirección exacta *</label>
+                  <input
+                    className={`form-input ${errors.address ? 'error' : ''}`}
+                    value={address.address}
+                    onChange={setAddr('address')}
+                    placeholder="Av. Winston Churchill #48, Torre A, Apto. 4B"
+                  />
                   {errors.address && <div className="form-error">{errors.address}</div>}
                 </div>
-                <div className="form-group" style={{ gridColumn: '1/-1' }}>
+                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                   <label className="form-label">Sector / Barrio *</label>
-                  <input className={`form-input ${errors.sector ? 'error' : ''}`} value={address.sector} onChange={setAddr('sector')} placeholder="Piantini, Naco, Los Prados..." />
+                  <input
+                    className={`form-input ${errors.sector ? 'error' : ''}`}
+                    value={address.sector}
+                    onChange={setAddr('sector')}
+                    placeholder="Piantini, Naco, Bella Vista..."
+                  />
                   {errors.sector && <div className="form-error">{errors.sector}</div>}
                 </div>
               </div>
+
+              {hasRxItems && (
+                <div className={styles.rxBox}>
+                  <div className={styles.rxBoxHeader}>
+                    <IconShield size={17} />
+                    <div>
+                      <strong>Validación de receta médica (Rx)</strong>
+                      <span>
+                        Requerida para: {rxItems.map(r => r.name).join(', ')}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 10 }}>
+                    <label className="form-label">Número o referencia de receta *</label>
+                    <input
+                      className={`form-input mono ${errors.prescriptionRef ? 'error' : ''}`}
+                      value={address.prescriptionRef}
+                      onChange={setAddr('prescriptionRef')}
+                      placeholder="Ej: RX-2026-4102"
+                    />
+                    {errors.prescriptionRef && <div className="form-error">{errors.prescriptionRef}</div>}
+                  </div>
+                  <label className={styles.rxCheck}>
+                    <input
+                      type="checkbox"
+                      checked={address.rxConfirmed}
+                      onChange={setAddr('rxConfirmed')}
+                    />
+                    <span>Confirmo contar con receta médica vigente para entregarla o mostrarla al recibir el pedido.</span>
+                  </label>
+                  {errors.rxConfirmed && <div className="form-error">{errors.rxConfirmed}</div>}
+                </div>
+              )}
             </div>
           )}
 
-          {/* ── STEP 1: PAYMENT ── */}
           {step === 1 && (
             <div>
-              <h3>💳 Método de Pago</h3>
+              <h3 className={styles.stepTitle}>
+                <IconCreditCard size={18} />
+                <span>Método de pago</span>
+              </h3>
               <div className={styles.payMethods}>
                 {[
-                  { id: 'card',  label: 'Tarjeta de crédito / débito', icon: '💳', sub: 'Visa, Mastercard, AMEX' },
-                  { id: 'cash',  label: 'Pago contra entrega',         icon: '💵', sub: 'Paga al recibir tu pedido' },
-                ].map(m => (
-                  <button
-                    key={m.id}
-                    className={`${styles.payMethod} ${payment.method === m.id ? styles.payMethodActive : ''}`}
-                    onClick={() => setPayment(p => ({ ...p, method: m.id }))}
-                  >
-                    <div className={styles.payMethodRadio} />
-                    <span style={{ fontSize: '1.3rem' }}>{m.icon}</span>
-                    <div>
-                      <div style={{ fontWeight: 700 }}>{m.label}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text3)', fontWeight: 400 }}>{m.sub}</div>
-                    </div>
-                  </button>
-                ))}
+                  { id: 'card', label: 'Tarjeta de crédito o débito', Icon: IconCreditCard, sub: 'Visa, Mastercard, AMEX' },
+                  { id: 'cash', label: 'Pago contra entrega', Icon: IconBanknote, sub: 'Paga en efectivo al recibir tu pedido' },
+                ].map(m => {
+                  const IconComp = m.Icon
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      className={`${styles.payMethod} ${payment.method === m.id ? styles.payMethodActive : ''}`}
+                      onClick={() => setPayment(p => ({ ...p, method: m.id }))}
+                    >
+                      <div className={styles.payMethodRadio} />
+                      <div className={styles.payMethodIcon}>
+                        <IconComp size={18} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--text)' }}>{m.label}</div>
+                        <div style={{ fontSize: '0.76rem', color: 'var(--text3)', fontWeight: 400 }}>{m.sub}</div>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
 
               {payment.method === 'card' && (
                 <div className={styles.cardFields}>
                   <div className="form-group">
                     <label className="form-label">Número de tarjeta</label>
-                    <input className={`form-input ${errors.cardNumber ? 'error' : ''}`}
+                    <input
+                      className={`form-input mono ${errors.cardNumber ? 'error' : ''}`}
                       value={payment.cardNumber}
                       onChange={e => setPay('cardNumber')({ target: { value: formatCard(e.target.value) } })}
-                      placeholder="0000 0000 0000 0000" maxLength={19}
-                      style={{ fontFamily: 'monospace', letterSpacing: '0.1em' }}
+                      placeholder="0000 0000 0000 0000"
+                      maxLength={19}
                     />
                     {errors.cardNumber && <div className="form-error">{errors.cardNumber}</div>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Nombre en la tarjeta</label>
-                    <input className={`form-input ${errors.cardName ? 'error' : ''}`}
+                    <input
+                      className={`form-input ${errors.cardName ? 'error' : ''}`}
                       value={payment.cardName}
                       onChange={e => setPay('cardName')({ target: { value: e.target.value.toUpperCase() } })}
-                      placeholder="JUAN GARCIA"
+                      placeholder="MARIA GARCIA"
                     />
                     {errors.cardName && <div className="form-error">{errors.cardName}</div>}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div className={styles.grid2}>
                     <div className="form-group">
                       <label className="form-label">Vencimiento</label>
-                      <input className={`form-input ${errors.expiry ? 'error' : ''}`}
+                      <input
+                        className={`form-input mono ${errors.expiry ? 'error' : ''}`}
                         value={payment.expiry}
-                        onChange={e => { let v = e.target.value.replace(/\D/g,''); if (v.length >= 2) v = v.slice(0,2)+'/'+v.slice(2,4); setPay('expiry')({ target: { value: v } }) }}
-                        placeholder="MM/AA" maxLength={5}
+                        onChange={e => {
+                          let v = e.target.value.replace(/\D/g, '')
+                          if (v.length >= 2) v = `${v.slice(0, 2)}/${v.slice(2, 4)}`
+                          setPay('expiry')({ target: { value: v } })
+                        }}
+                        placeholder="MM/AA"
+                        maxLength={5}
                       />
                       {errors.expiry && <div className="form-error">{errors.expiry}</div>}
                     </div>
                     <div className="form-group">
                       <label className="form-label">CVV</label>
-                      <input className={`form-input ${errors.cvv ? 'error' : ''}`}
+                      <input
+                        className={`form-input mono ${errors.cvv ? 'error' : ''}`}
                         value={payment.cvv}
-                        onChange={e => setPay('cvv')({ target: { value: e.target.value.replace(/\D/g,'').slice(0,4) } })}
-                        placeholder="•••" type="password" maxLength={4}
+                        onChange={e => setPay('cvv')({ target: { value: e.target.value.replace(/\D/g, '').slice(0, 4) } })}
+                        placeholder="•••"
+                        type="password"
+                        maxLength={4}
                       />
                       {errors.cvv && <div className="form-error">{errors.cvv}</div>}
                     </div>
                   </div>
-                  <p style={{ fontSize: '0.76rem', color: 'var(--text4)', display: 'flex', alignItems: 'center', gap: 5 }}>
-                    🔒 Datos protegidos con cifrado SSL de 256 bits
+                  <p className={styles.sslNote}>
+                    <IconLock size={14} />
+                    <span>Transacción protegida con cifrado TLS de 256 bits</span>
                   </p>
                 </div>
               )}
 
               {payment.method === 'cash' && (
                 <div className={styles.cashNote}>
-                  <strong>💵 Pago en efectivo</strong><br />
-                  Ten listo el monto exacto de <strong>RD${grandTotal.toFixed(2)}</strong> al momento de recibir tu pedido.
-                  El repartidor no lleva cambio.
+                  <IconBanknote size={18} />
+                  <div>
+                    <strong>Pago en efectivo contra entrega</strong>
+                    <p>
+                      Prepara el monto exacto de <strong className="tabular-nums">RD${grandTotal.toFixed(2)}</strong> al momento de recibir tu pedido.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* ── STEP 2: REVIEW ── */}
           {step === 2 && (
             <div>
-              <h3>📋 Confirmar Pedido</h3>
+              <h3 className={styles.stepTitle}>
+                <IconClipboard size={18} />
+                <span>Confirmar pedido</span>
+              </h3>
               <div className={styles.reviewSection}>
                 <div className={styles.reviewBlock}>
-                  <h4>📍 Entrega</h4>
-                  <p><strong>{address.name}</strong> · {address.phone}</p>
+                  <h4>Entrega</h4>
+                  <p>
+                    <strong>{address.name}</strong> · <span className="tabular-nums">{address.phone}</span>
+                  </p>
                   <p>{address.address}, {address.sector}, {address.city}</p>
+                  {hasRxItems && (
+                    <p style={{ marginTop: 6, color: 'var(--blue-dark)', fontWeight: 600 }}>
+                      Receta Rx verificada: <span className="mono">{address.prescriptionRef}</span>
+                    </p>
+                  )}
                 </div>
+
                 <div className={styles.reviewBlock}>
-                  <h4>💳 Pago</h4>
-                  <p>{payment.method === 'card'
-                    ? `Tarjeta **** **** **** ${payment.cardNumber.replace(/\s/g,'').slice(-4) || '????'} (${payment.cardName || 'Sin nombre'})`
-                    : '💵 Efectivo contra entrega'
-                  }</p>
+                  <h4>Método de pago</h4>
+                  <p>
+                    {payment.method === 'card'
+                      ? `Tarjeta **** **** **** ${payment.cardNumber.replace(/\s/g, '').slice(-4) || '????'} (${payment.cardName || 'Titular'})`
+                      : 'Efectivo contra entrega'}
+                  </p>
                 </div>
+
                 <div className={styles.reviewBlock}>
-                  <h4>🛒 Productos ({cart.length})</h4>
+                  <h4>Productos ({cart.length})</h4>
                   <div className={styles.reviewItems}>
                     {cart.map(i => (
                       <div key={i.id} className={styles.reviewItem}>
-                        <span>{i.emoji} {i.name} <span style={{ color: 'var(--text4)' }}>×{i.qty}</span></span>
-                        <span>RD${(i.price * i.qty).toFixed(2)}</span>
+                        <span>
+                          {i.name}{' '}
+                          <span className="tabular-nums" style={{ color: 'var(--text4)' }}>× {i.qty}</span>
+                        </span>
+                        <span className="tabular-nums">RD${(i.price * i.qty).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -339,29 +541,41 @@ export default function Checkout() {
             </div>
           )}
 
-          {/* Navigation */}
           <div className={styles.navBtns}>
             {step > 0 && (
-              <button className="btn-ghost" onClick={handleBack}>← Anterior</button>
+              <button type="button" className="btn-ghost" onClick={handleBack}>
+                Anterior
+              </button>
             )}
             {step < 2 ? (
-              <button className="btn-primary" onClick={handleNext} style={{ marginLeft: 'auto' }}>
-                Siguiente →
+              <button type="button" className="btn-primary" onClick={handleNext} style={{ marginLeft: 'auto' }}>
+                <span>Siguiente</span>
+                <IconArrowRight size={15} />
               </button>
             ) : (
               <button
+                type="button"
                 className="btn-primary"
-                style={{ minWidth: 190, marginLeft: 'auto' }}
+                style={{ minWidth: 196, marginLeft: 'auto' }}
                 onClick={handleConfirm}
                 disabled={loading}
               >
-                {loading ? <><span className="spinner" /> Procesando...</> : '✅ Confirmar Pedido'}
+                {loading ? (
+                  <>
+                    <span className="spinner" />
+                    <span>Procesando...</span>
+                  </>
+                ) : (
+                  <>
+                    <IconCheck size={15} />
+                    <span>Confirmar pedido</span>
+                  </>
+                )}
               </button>
             )}
           </div>
         </div>
 
-        {/* Sidebar */}
         <OrderSidebar
           cart={cart}
           cartSubtotal={cartSubtotal}

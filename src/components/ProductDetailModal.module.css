@@ -1,0 +1,181 @@
+.dialog {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 820px;
+  padding: 28px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: springUp 200ms var(--ease);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms, border-color 150ms, background 150ms;
+}
+.closeBtn:hover {
+  color: var(--text);
+  border-color: var(--border2);
+  background: var(--bg);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.mediaCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mediaBox {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r);
+  overflow: hidden;
+  background: #F4F5F4;
+  border: 1px solid var(--border);
+}
+.mediaBox img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mediaFallback {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; color: var(--green-dark); font-weight: 600; font-size: 0.9rem;
+}
+
+.rxNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--blue-light);
+  border: 1px solid rgba(29, 99, 220, 0.2);
+  color: var(--blue-dark);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.rxNotice strong { display: block; font-weight: 700; margin-bottom: 2px; }
+
+.infoCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 500; color: var(--text3);
+  margin-bottom: 6px;
+}
+.title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  padding-right: 32px;
+}
+.desc {
+  font-size: 0.9rem;
+  color: var(--text2);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.specList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.specRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.82rem;
+}
+.specRow dt { color: var(--text3); font-weight: 500; }
+.specRow dd { color: var(--text); font-weight: 600; text-align: right; }
+
+.indications {
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  margin-bottom: 18px;
+}
+.indications strong {
+  display: block; font-size: 0.76rem; color: var(--text2); margin-bottom: 4px;
+}
+.indications p {
+  font-size: 0.81rem; color: var(--text3); line-height: 1.5;
+}
+
+.buyRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qtyControl {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  background: var(--white);
+  height: 42px;
+}
+.qtyControl button {
+  width: 36px; height: 100%;
+  background: transparent; border: none; color: var(--text);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.qtyControl button:hover:not(:disabled) { background: var(--bg); color: var(--green-dark); }
+.qtyControl button:disabled { opacity: 0.35; cursor: not-allowed; }
+.qtyControl span {
+  min-width: 28px; text-align: center; font-weight: 700; font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .dialog { padding: 20px; }
+  .grid { grid-template-columns: 1fr; gap: 20px; }
+}

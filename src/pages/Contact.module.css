@@ -1,84 +1,127 @@
 .layout {
-  display: grid; grid-template-columns: 360px 1fr;
-  gap: 24px; align-items: start; margin-bottom: 40px;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 40px;
 }
 
 .infoCol { display: flex; flex-direction: column; gap: 16px; }
 
-/* Intro card */
-.infoIntro { padding: 24px; }
-.infoTitle { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; }
-.infoDesc { font-size: 0.875rem; color: var(--text2); line-height: 1.72; margin-bottom: 14px; }
+.infoIntro { padding: 22px; }
+.introHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.introIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  background: var(--green-light);
+  color: var(--green-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.infoTitle { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.infoDesc { font-size: 0.86rem; color: var(--text2); line-height: 1.65; margin-bottom: 14px; }
 .tagRow { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* Info items */
 .infoItemsCard { padding: 0; overflow: hidden; }
 .infoItem {
-  display: flex; align-items: center; gap: 14px;
-  padding: 15px 20px; transition: background .15s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  transition: background 150ms;
 }
 .infoItem:not(:last-child) { border-bottom: 1px solid var(--border); }
 .infoItem:hover { background: var(--bg); }
 .infoIcon {
-  width: 40px; height: 40px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-.infoIconGreen { background: var(--green-light); }
-.infoIconBlue  { background: var(--blue-light); }
-.infoLabel { font-size: 0.71rem; color: var(--text4); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
-.infoValue { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+.infoIconGreen { background: var(--green-light); color: var(--green-dark); }
+.infoIconBlue  { background: var(--blue-light); color: var(--blue-dark); }
+.infoLabel { font-size: 0.7rem; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.infoValue { font-size: 0.86rem; font-weight: 600; color: var(--text); }
 
-/* Map */
-.mapCard { padding: 0; overflow: hidden; }
-.mapPlaceholder {
-  height: 130px;
-  background: linear-gradient(135deg, var(--green-light) 0%, var(--blue-light) 100%);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 8px; cursor: pointer; transition: opacity .2s;
+.coverageCard {
+  padding: 18px 20px;
+  background: var(--bg);
 }
-.mapPlaceholder:hover { opacity: .9; }
+.coverageHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 6px;
+}
+.coverageDesc {
+  font-size: 0.81rem;
+  color: var(--text2);
+  line-height: 1.55;
+}
 
-/* Form card */
-.formCard { padding: 32px; }
-.formTitle { font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; }
-.formSub { font-size: 0.85rem; color: var(--text3); margin-bottom: 26px; }
+.formCard { padding: 28px 30px; }
+.formTitle { font-size: 1.15rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.formSub { font-size: 0.85rem; color: var(--text3); margin-bottom: 22px; }
+.formGrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .successAlert {
-  background: var(--green-light); color: var(--green-dark);
-  border: 1px solid rgba(24,184,118,.25); border-left: 4px solid var(--green);
-  border-radius: var(--r-sm); padding: 13px 16px;
-  font-size: 0.875rem; font-weight: 500; margin-bottom: 20px;
-  animation: fadeUp .3s var(--ease);
-  display: flex; align-items: center; gap: 8px;
+  background: var(--green-light);
+  color: var(--green-dark);
+  border: 1px solid rgba(16, 154, 100, 0.28);
+  border-radius: var(--r-sm);
+  padding: 12px 15px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
 }
 
 .sendBtn {
-  display: flex; align-items: center; gap: 8px;
-  padding: 13px 28px; border-radius: var(--r-sm);
-  background: var(--green); color: #fff; border: none;
-  font-weight: 700; font-size: 0.95rem;
-  transition: all .2s var(--ease);
-  box-shadow: 0 4px 16px var(--green-glow);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: var(--r-sm);
+  background: var(--green);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 150ms;
   cursor: pointer;
 }
-.sendBtn:hover { background: var(--green-dark); transform: translateY(-1px); }
-.sendBtn:active { transform: scale(.98); }
-.sendBtn:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+.sendBtn:hover:not(:disabled) { background: var(--green-dark); }
+.sendBtn:disabled { opacity: 0.65; cursor: not-allowed; }
 
 /* FAQ */
-.faqSection { margin-top: 12px; }
-.faqTitle { font-size: 1.25rem; font-weight: 800; margin-bottom: 18px; letter-spacing: -.01em; }
-.faqGrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
-.faqCard { padding: 22px; transition: all .25s var(--ease); }
-.faqCard:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.faqQ { font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; line-height: 1.4; color: var(--text); }
-.faqA { font-size: 0.82rem; color: var(--text3); line-height: 1.65; }
+.faqSection { margin-top: 8px; }
+.faqTitle { font-size: 1.22rem; font-weight: 700; color: var(--text); margin-bottom: 16px; letter-spacing: -0.015em; }
+.faqGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.faqCard { padding: 20px; }
+.faqQ { font-size: 0.9rem; font-weight: 700; margin-bottom: 7px; line-height: 1.35; color: var(--text); }
+.faqA { font-size: 0.82rem; color: var(--text3); line-height: 1.6; }
 
-@media (max-width: 860px) {
+@media (max-width: 880px) {
   .layout { grid-template-columns: 1fr; }
   .faqGrid { grid-template-columns: 1fr; }
 }
-@media (max-width: 500px) {
+@media (max-width: 540px) {
   .formCard { padding: 22px 18px; }
+  .formGrid2 { grid-template-columns: 1fr; }
 }

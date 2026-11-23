@@ -1,29 +1,43 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from '../data/datos.js'
+import {
+  IconCart,
+  IconTrash,
+  IconPlus,
+  IconMinus,
+  IconPill,
+  IconAlert,
+  IconArrowRight,
+} from '../components/Icons.jsx'
 import styles from './Cart.module.css'
 
 export default function Cart() {
-  const { cart, removeFromCart, changeQty, clearCart, cartSubtotal, cartTax, cartTotal, cartCount, user, showToast } = useApp()
+  const {
+    cart, removeFromCart, changeQty, clearCart,
+    cartSubtotal, cartTax, cartTotal, cartCount, user, showToast,
+  } = useApp()
   const navigate = useNavigate()
   const [removingId, setRemovingId] = useState(null)
 
-  const shipping = cartSubtotal > 500 ? 0 : 150
+  const shipping = cartSubtotal > FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE
   const grandTotal = cartTotal + shipping
-  const remainingForFree = Math.max(0, 500 - cartSubtotal)
+  const remainingForFree = Math.max(0, FREE_SHIPPING_THRESHOLD - cartSubtotal)
+  const hasRxItems = cart.some(i => i.requiresPrescription)
 
   const handleRemove = (item) => {
     setRemovingId(item.id)
     setTimeout(() => {
       removeFromCart(item.id)
       setRemovingId(null)
-      showToast(`${item.name} eliminado`, 'red')
-    }, 280)
+      showToast(`${item.name} eliminado del carrito`, 'red')
+    }, 220)
   }
 
   const handleCheckout = () => {
     if (!user) {
-      showToast('Inicia sesión para continuar con la compra', 'orange')
+      showToast('Inicia sesión para completar tu pedido', 'orange')
       navigate('/login')
       return
     }
@@ -33,14 +47,15 @@ export default function Cart() {
   if (cart.length === 0) {
     return (
       <div className="page-wrapper">
-        <div className={`card ${styles.emptyCart}`}>
-          <div className={styles.emptyIcon}>🛒</div>
-          <h2 className={styles.emptyTitle}>Tu carrito está vacío</h2>
-          <p className={styles.emptyDesc}>
-            Explora nuestro catálogo y agrega los productos que necesitas.
-          </p>
-          <Link to="/products" className="btn-primary" style={{ fontSize: '0.95rem', padding: '12px 28px' }}>
-            Ver productos →
+        <div className="card empty-state">
+          <div className="empty-icon">
+            <IconCart size={26} />
+          </div>
+          <h3>Tu carrito está vacío</h3>
+          <p>Explora nuestro catálogo certificado y agrega los medicamentos o suplementos que necesitas.</p>
+          <Link to="/products" className="btn-primary">
+            <span>Explorar catálogo</span>
+            <IconArrowRight size={15} />
           </Link>
         </div>
       </div>
@@ -49,62 +64,82 @@ export default function Cart() {
 
   return (
     <div className="page-wrapper">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+      <div className={styles.topRow}>
         <div>
-          <h2 className="section-title">🛒 Carrito</h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text3)', marginTop: 4 }}>
-            {cartCount} {cartCount === 1 ? 'producto' : 'productos'}
+          <h2 className="section-title">Carrito de compras</h2>
+          <p className={`${styles.topSub} tabular-nums`}>
+            {cartCount} {cartCount === 1 ? 'unidad seleccionada' : 'unidades seleccionadas'}
           </p>
         </div>
         <button
+          type="button"
           className="btn-ghost"
-          style={{ fontSize: '0.8rem', color: 'var(--red)', borderColor: '#fecaca' }}
+          style={{ color: 'var(--red)', borderColor: 'rgba(220,38,38,.25)' }}
           onClick={() => { clearCart(); showToast('Carrito vaciado', 'orange') }}
         >
-          🗑️ Vaciar todo
+          <IconTrash size={15} />
+          <span>Vaciar carrito</span>
         </button>
       </div>
 
       <div className={styles.layout}>
-        {/* Items list */}
         <div className={`card ${styles.cartCard}`}>
           <div className={styles.cartHeader}>
-            <h3>Mis Productos</h3>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text3)', fontWeight: 500 }}>
-              {cartCount} {cartCount === 1 ? 'item' : 'items'}
+            <h3>Productos seleccionados</h3>
+            <span className="tabular-nums" style={{ fontSize: '0.82rem', color: 'var(--text3)' }}>
+              {cart.length} {cart.length === 1 ? 'línea' : 'líneas'}
             </span>
           </div>
 
-          {cart.map((item, idx) => (
+          {cart.map(item => (
             <div
               key={item.id}
               className={`${styles.item} ${removingId === item.id ? styles.itemRemoving : ''}`}
-              style={{ animationDelay: `${idx * 60}ms` }}
             >
-              <div className={styles.itemImg}>{item.emoji}</div>
+              <div className={styles.itemImg}>
+                {item.image ? (
+                  <img src={item.image} alt={item.name} referrerPolicy="no-referrer" />
+                ) : (
+                  <IconPill size={22} />
+                )}
+              </div>
 
               <div className={styles.itemInfo}>
                 <div className={styles.itemName}>{item.name}</div>
-                <div className={styles.itemCat}>{item.cat}
+                <div className={styles.itemMeta}>
+                  <span>{item.cat}</span>
+                  {item.sku && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span className="mono">{item.sku}</span>
+                    </>
+                  )}
                   {item.requiresPrescription && (
-                    <span className="badge badge-orange" style={{ marginLeft: 6, fontSize: '0.62rem' }}>Rx</span>
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span style={{ color: 'var(--blue-dark)', fontWeight: 600 }}>Requiere receta Rx</span>
+                    </>
                   )}
                 </div>
-                <div className={styles.itemPrice}>RD${item.price.toFixed(2)} c/u</div>
+                <div className={`${styles.itemPrice} tabular-nums`}>
+                  RD${item.price.toFixed(2)} c/u
+                </div>
               </div>
 
               <div className={styles.qtyControl}>
                 <button
+                  type="button"
                   className={styles.qtyBtn}
                   onClick={() => changeQty(item.id, -1)}
-                  disabled={item.qty <= 1}
-                  title="Reducir cantidad"
-                >−</button>
-                <span className={styles.qtyNum}>{item.qty}</span>
+                  aria-label="Reducir cantidad"
+                >
+                  <IconMinus size={13} />
+                </button>
+                <span className={`${styles.qtyNum} tabular-nums`}>{item.qty}</span>
                 <button
+                  type="button"
                   className={styles.qtyBtn}
                   onClick={() => {
-                    const prod = { stock: item.stock ?? 99 }
                     if (item.qty >= (item.stock ?? 99)) {
                       showToast('Stock máximo alcanzado', 'orange')
                       return
@@ -112,56 +147,58 @@ export default function Cart() {
                     changeQty(item.id, 1)
                   }}
                   disabled={item.qty >= (item.stock ?? 99)}
-                  title="Aumentar cantidad"
-                >+</button>
+                  aria-label="Aumentar cantidad"
+                >
+                  <IconPlus size={13} />
+                </button>
               </div>
 
-              <div className={styles.itemTotal}>
+              <div className={`${styles.itemTotal} tabular-nums`}>
                 RD${(item.price * item.qty).toFixed(2)}
               </div>
 
               <button
+                type="button"
                 className={styles.removeBtn}
                 onClick={() => handleRemove(item)}
-                title="Eliminar del carrito"
+                aria-label={`Eliminar ${item.name}`}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                  <path d="M10 11v6M14 11v6"/>
-                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                </svg>
+                <IconTrash size={15} />
               </button>
             </div>
           ))}
         </div>
 
-        {/* Summary sidebar */}
-        <div className={styles.summaryCol}>
+        {/* Summary Sidebar */}
+        <aside className={styles.summaryCol}>
           <div className={`card ${styles.summaryCard}`}>
-            <h3 className={styles.summaryTitle}>Resumen de compra</h3>
+            <h3 className={styles.summaryTitle}>Resumen del pedido</h3>
 
             <div className={styles.summaryRow}>
-              <span>Subtotal ({cartCount} items)</span>
-              <span>RD${cartSubtotal.toFixed(2)}</span>
+              <span>Subtotal ({cartCount} uds.)</span>
+              <span className="tabular-nums">RD${cartSubtotal.toFixed(2)}</span>
             </div>
-
             <div className={styles.summaryRow}>
               <span>ITBIS (18%)</span>
-              <span>RD${cartTax.toFixed(2)}</span>
+              <span className="tabular-nums">RD${cartTax.toFixed(2)}</span>
             </div>
-
             <div className={styles.summaryRow}>
-              <span>Envío</span>
-              {shipping === 0
-                ? <span className={styles.freeShip}>🎁 Gratis</span>
-                : <span>RD${shipping.toFixed(2)}</span>
-              }
+              <span>Envío estándar</span>
+              <span className="tabular-nums" style={{ color: shipping === 0 ? 'var(--green-dark)' : 'inherit', fontWeight: shipping === 0 ? 600 : 400 }}>
+                {shipping === 0 ? 'Gratis' : `RD$${shipping.toFixed(2)}`}
+              </span>
             </div>
 
             {remainingForFree > 0 && (
               <div className={styles.shippingHint}>
-                Agrega <strong>RD${remainingForFree.toFixed(0)}</strong> más para obtener envío gratis
+                Agrega <strong className="tabular-nums">RD${remainingForFree.toFixed(2)}</strong> más para envío sin costo.
+              </div>
+            )}
+
+            {hasRxItems && (
+              <div className={styles.rxHint}>
+                <IconAlert size={15} />
+                <span>Tu pedido incluye medicamentos Rx; se solicitará referencia de receta en el siguiente paso.</span>
               </div>
             )}
 
@@ -169,53 +206,33 @@ export default function Cart() {
 
             <div className={styles.totalRow}>
               <span>Total</span>
-              <span style={{ color: 'var(--green)' }}>RD${grandTotal.toFixed(2)}</span>
-            </div>
-
-            <div className={styles.taxNote}>
-              <span>Impuestos incluidos (ITBIS 18%)</span>
-              <span>RD${cartTax.toFixed(2)}</span>
+              <span className="tabular-nums" style={{ color: 'var(--green-dark)' }}>
+                RD${grandTotal.toFixed(2)}
+              </span>
             </div>
 
             {!user && (
               <div className={styles.loginWarning}>
-                <span>⚠️</span>
+                <IconAlert size={15} />
                 <span>
-                  <Link to="/login" style={{ color: 'var(--blue)', fontWeight: 700 }}>Inicia sesión</Link>
-                  {' '}para finalizar tu compra
+                  <Link to="/login" style={{ color: 'var(--blue-dark)', fontWeight: 600, textDecoration: 'underline' }}>
+                    Inicia sesión
+                  </Link>{' '}
+                  para finalizar tu compra.
                 </span>
               </div>
             )}
 
-            <button className={styles.checkoutBtn} onClick={handleCheckout}>
-              {user
-                ? <><span>💳</span> Ir al Checkout</>
-                : <><span>🔒</span> Login para Comprar</>
-              }
+            <button type="button" className="btn-primary" style={{ width: '100%', marginTop: 18, padding: '12px 18px' }} onClick={handleCheckout}>
+              <span>{user ? 'Continuar al checkout' : 'Iniciar sesión para comprar'}</span>
+              <IconArrowRight size={15} />
             </button>
 
-            <Link to="/products" className={styles.continueBtn}>
-              ← Seguir comprando
+            <Link to="/products" className="btn-ghost" style={{ width: '100%', marginTop: 8 }}>
+              Seguir comprando
             </Link>
           </div>
-
-          {/* Trust badges */}
-          <div className={`card ${styles.trustBox}`}>
-            <div className={styles.trustItems}>
-              {[
-                '🔒 Pago 100% seguro con SSL',
-                '🚚 Envío protegido a tu puerta',
-                '↩️ Devolución garantizada 30 días',
-                '💬 Soporte farmacéutico 24/7',
-              ].map(t => (
-                <div key={t} className={styles.trustItem}>
-                  <div className={styles.trustDot} />
-                  {t}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        </aside>
       </div>
     </div>
   )
